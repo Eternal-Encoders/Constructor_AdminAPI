@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace ConstructorAdminAPI.Models.Entities
 {
-    public class InstituteFloor : MongoRoot
+    public class InstituteFloor : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]

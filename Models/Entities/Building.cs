@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace ConstructorAdminAPI.Models.Entities
 {
-    public class Building : MongoRoot
+    public class Building : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]
@@ -17,6 +17,9 @@ namespace ConstructorAdminAPI.Models.Entities
         public string Name { get; set; }
         [BsonElement("displayableName")]
         [JsonPropertyName("displayableName")]
+        //[BsonElement("userId")]
+        //[JsonPropertyName("userId")]
+        //public string UserId { get; set; }
         public string DisplayableName { get; set; }
         [BsonElement("minFloor")]
         [JsonPropertyName("minFloor")]
@@ -36,5 +39,19 @@ namespace ConstructorAdminAPI.Models.Entities
         [BsonElement("icon")]
         [JsonPropertyName("icon")]
         public string Icon { get; set; }
+        [BsonElement("gps")]
+        [JsonPropertyName("gps")]
+        [BsonIgnoreIfNull]
+        public GPS? GPS { get; set; }
+    }
+
+    public class GPS
+    {
+        [BsonElement("centre")]
+        [JsonPropertyName("centre")]
+        public double Centre { get; set; }
+        [BsonElement("floor")]
+        [JsonPropertyName("floor")]
+        public int Floor { get; set; }
     }
 }

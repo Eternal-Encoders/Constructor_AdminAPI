@@ -6,7 +6,7 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace ConstructorAdminAPI.Models.Entities
 {
-    public class Floor : MongoRoot
+    public class Floor : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]
@@ -19,6 +19,9 @@ namespace ConstructorAdminAPI.Models.Entities
         [BsonElement("building")]
         [JsonPropertyName("building")]
         public string Building { get; set; }
+        //[BsonElement("building")]
+        //[JsonPropertyName("building")]
+        //public string BuildingId { get; set; }
         [BsonElement("width")]
         [JsonPropertyName("width")]
         public int Width { get; set; }

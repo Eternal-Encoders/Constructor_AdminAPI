@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace ConstructorAdminAPI.Models.Entities
 {
-    public class Stair : MongoRoot
+    public class Stair : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]

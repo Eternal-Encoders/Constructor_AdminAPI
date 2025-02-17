@@ -29,9 +29,12 @@ namespace ConstructorAdminAPI.Application.Services
                 f.Building == floorDto.Building && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != null)
                 return Result.Result.Error(new Result.Error("Floor already exists", 400));
 
+            //if (await _buildingRepository.FirstOrDefaultAsync(b =>
+            //   b.Name == floorDto.Building, cancellationToken) == null)
+            //    return Result.Result.Error(new Result.Error("Building doesn`t exist", 404));
+
             var graphPoints = floorDto.GraphPoints == null ? [] : floorDto.GraphPoints;
             List<string> graphIds = [];
-
             var stairs = await _stairRepository.ListAsync(s => s.Building == floorDto.Building, cancellationToken);
             List<Stair> updatedStairs = [];
 
@@ -100,5 +103,26 @@ namespace ConstructorAdminAPI.Application.Services
             return Result.Result<IReadOnlyList<Floor>>.Success(res);
         }
 
+        public async Task<Result.Result<IReadOnlyList<Floor>>> GetFloorsByBuilding(string building, CancellationToken cancellationToken)
+        {
+            var res = await _floorRepository.ListAsync(f => f.Building == building, cancellationToken);
+            return Result.Result<IReadOnlyList<Floor>>.Success(res);
+        }
+
+        public async Task<Result.Result<Floor>> GetFloorByBuildingAndNumber(string building, int number, CancellationToken cancellationToken)
+        {
+            var res = await _floorRepository.FirstOrDefaultAsync(f => f.Building == building &&
+                f.FloorNumber == number, cancellationToken);
+            if (res == null) return Result.Result<Floor>.Error(new Result.Error("Floor not found", 404));
+            return Result.Result<Floor>.Success(res);
+        }
+
+        public async Task<Result.Result<Floor>> GetFloorById(string id, CancellationToken cancellationToken)
+        {
+            var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+            if (floor == null) return Result.Result<Floor>.Error(new Result.Error("Floor not found", 404));
+
+            return Result.Result<Floor>.Success(floor);
+        }
     }
 }

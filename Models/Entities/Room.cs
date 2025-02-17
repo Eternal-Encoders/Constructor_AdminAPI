@@ -42,17 +42,18 @@ namespace ConstructorAdminAPI.Models.Entities
 
     public class RoomChild
     {
+        private string type;
         [BsonElement("type")]
         [JsonPropertyName("type")]
         public string Type 
         {
-            get; set;
-            //get { return Type; }
-            //set
-            //{
-            //    if (value == "Icon" || value == "Text")
-            //        Type = value;
-            //}
+            //get; set;
+            get { return type; }
+            set
+            {
+                if (value == "Icon" || value == "Text")
+                    type = value;
+            }
         }
         [BsonElement("identifier")]
         [JsonPropertyName("identifier")]

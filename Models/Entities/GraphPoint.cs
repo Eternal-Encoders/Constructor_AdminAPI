@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace ConstructorAdminAPI.Models.Entities
 {
-    public class GraphPoint : MongoRoot
+    public class GraphPoint : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]

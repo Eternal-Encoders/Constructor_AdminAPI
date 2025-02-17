@@ -8,7 +8,6 @@ using MongoDB.Driver;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
-    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
     .AddJsonOptions(opt =>
     {
         var serializerOptions = opt.JsonSerializerOptions;
@@ -22,7 +21,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<MongoDBContext>();
+
 builder.Services.AddScoped<FloorService>();
+builder.Services.AddScoped<BuildingService>();
+builder.Services.AddScoped<GraphPointService>();
+builder.Services.AddScoped<StairService>();
+
+builder.Services.AddScoped<IBuildingRepository, BuildingMongoRepository>();
 builder.Services.AddScoped<IFloorRepository, FloorMongoRepository>();
 builder.Services.AddScoped<IGraphPointRepository, GraphPointMongoRepository>();
 builder.Services.AddScoped<IStairRepository, StairMongoRepository>();
