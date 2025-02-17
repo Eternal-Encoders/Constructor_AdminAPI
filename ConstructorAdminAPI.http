@@ -1,0 +1,6 @@
+@ConstructorAdminAPI_HostAddress = http://localhost:5020
+
+GET {{ConstructorAdminAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
