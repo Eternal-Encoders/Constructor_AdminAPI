@@ -1,4 +1,4 @@
-﻿namespace ConstructorAdminAPI.Core.Shared
+﻿namespace Constructor_API.Core.Shared
 {
     public interface IUnitOfWork : IDisposable
     {

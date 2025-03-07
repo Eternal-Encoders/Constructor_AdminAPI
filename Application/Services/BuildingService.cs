@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+using Constructor_API.Core.Repositories;
+using Constructor_API.Models.DTOs;
+using Constructor_API.Models.Entities;
 using MongoDB.Bson;
 
-namespace ConstructorAdminAPI.Application.Services
+namespace Constructor_API.Application.Services
 {
     public class BuildingService
     {

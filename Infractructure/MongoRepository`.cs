@@ -1,12 +1,12 @@
-﻿using ConstructorAdminAPI.Application.Result;
-using ConstructorAdminAPI.Core.Shared;
-using ConstructorAdminAPI.Core.Shared.Storage;
+﻿using Constructor_API.Application.Result;
+using Constructor_API.Core.Shared;
+using Constructor_API.Core.Shared.Storage;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Linq.Expressions;
 
-namespace ConstructorAdminAPI.Infractructure
+namespace Constructor_API.Infractructure
 {
     public class MongoRepository<TAggregateRoot>: Repository<TAggregateRoot> where TAggregateRoot : class, IAggregateRoot
     {

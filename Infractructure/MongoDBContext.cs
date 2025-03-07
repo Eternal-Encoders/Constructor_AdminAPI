@@ -1,7 +1,7 @@
-﻿using ConstructorAdminAPI.Core.Shared;
+﻿using Constructor_API.Core.Shared;
 using MongoDB.Driver;
 
-namespace ConstructorAdminAPI.Infractructure
+namespace Constructor_API.Infractructure
 {
     public class MongoDBContext : IUnitOfWork
     {

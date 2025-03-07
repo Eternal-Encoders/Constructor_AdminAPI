@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace ConstructorAdminAPI.Core.Shared.Storage
+namespace Constructor_API.Core.Shared.Storage
 {
     public abstract class ReadOnlyRepository<TAggregateRoot> : IReadOnlyRepository<TAggregateRoot> 
         where TAggregateRoot : class, IAggregateRoot

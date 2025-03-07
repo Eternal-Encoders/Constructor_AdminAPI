@@ -1,7 +1,7 @@
-﻿using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Core.Repositories;
+using Constructor_API.Models.Entities;
 
-namespace ConstructorAdminAPI.Application.Services
+namespace Constructor_API.Application.Services
 {
     public class GraphPointService
     {
@@ -19,12 +19,13 @@ namespace ConstructorAdminAPI.Application.Services
 
         public async Task<Result.Result> InsertGraphPoint(GraphPoint graphPoint, CancellationToken cancellationToken)
         {
-            if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPoint.Id, cancellationToken) != null)
-                return Result.Result.Error(new Result.Error($"Graph point {graphPoint.Id} already exists", 400));
+            //if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPoint.Id, cancellationToken) != null)
+            //    return Result.Result.Error(new Result.Error($"Graph point {graphPoint.Id} already exists", 400));
 
             if (await _floorRepository.FirstOrDefaultAsync(f => f.Building == graphPoint.Building &&
                 f.FloorNumber == graphPoint.Floor, cancellationToken) == null)
-                return Result.Result.Error(new Result.Error($"Floor not found", 404));
+                return Result.Result.Error(new Result.Error(
+                    $"Floor {graphPoint.Floor} in building {graphPoint.Building} is not found", 404));
 
             if (graphPoint.StairId != null)
             {
@@ -50,6 +51,47 @@ namespace ConstructorAdminAPI.Application.Services
             }
 
             await _graphPointRepository.AddAsync(graphPoint, cancellationToken);
+
+            await _graphPointRepository.SaveChanges();
+
+            return Result.Result.Success();
+        }
+
+        public async Task<Result.Result> InsertGraphPoints(GraphPoint[] graphPoints, CancellationToken cancellationToken)
+        {
+            foreach (GraphPoint graphPoint in graphPoints)
+            {
+                if (await _floorRepository.FirstOrDefaultAsync(f => f.Building == graphPoint.Building &&
+                    f.FloorNumber == graphPoint.Floor, cancellationToken) == null)
+                    return Result.Result.Error(new Result.Error(
+                        $"Floor {graphPoint.Floor} in building {graphPoint.Building} is not found", 404));
+
+                if (graphPoint.StairId != null)
+                {
+                    Stair? stair = await _stairRepository.FirstOrDefaultAsync(z => z.Id == graphPoint.StairId, cancellationToken);
+
+                    if (stair == null)
+                    {
+                        var newStair = new Stair
+                        {
+                            Id = graphPoint.StairId,
+                            Building = graphPoint.Building,
+                            StairPoint = graphPoint.StairId,
+                            Links = [],
+                        };
+                        await _stairRepository.AddAsync(newStair, cancellationToken);
+                    }
+                    else
+                    {
+                        stair.Links = stair.Links == null ? [] : stair.Links;
+
+                        stair.Links.Append(graphPoint.Id);
+                        await _stairRepository.UpdateAsync(stair.Id, stair, cancellationToken);
+                    }
+                }
+            }
+
+            await _graphPointRepository.AddRangeAsync(graphPoints, cancellationToken);
 
             await _graphPointRepository.SaveChanges();
 

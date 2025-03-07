@@ -1,5 +1,5 @@
 ﻿
-namespace ConstructorAdminAPI.Application.Result
+namespace Constructor_API.Application.Result
 {
     public class Result : IResult
     {

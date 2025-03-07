@@ -1,7 +1,7 @@
-﻿using ConstructorAdminAPI.Application.Result;
+﻿using Constructor_API.Application.Result;
 using System.Linq.Expressions;
 
-namespace ConstructorAdminAPI.Core.Shared.Storage
+namespace Constructor_API.Core.Shared.Storage
 {
     public interface IRepository<TAggregateRoot> : IReadOnlyRepository<TAggregateRoot> where TAggregateRoot : class, IAggregateRoot
     {

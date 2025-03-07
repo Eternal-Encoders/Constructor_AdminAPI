@@ -1,8 +1,8 @@
-﻿using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Core.Repositories;
+using Constructor_API.Models.Entities;
 using System.Threading;
 
-namespace ConstructorAdminAPI.Application.Services
+namespace Constructor_API.Application.Services
 {
     public class StairService
     {

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+using Constructor_API.Models.DTOs;
+using Constructor_API.Models.Entities;
 
-namespace ConstructorAdminAPI.Helpers
+namespace Constructor_API.Helpers
 {
     public class MappingProfiles : Profile
     {

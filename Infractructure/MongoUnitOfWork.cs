@@ -1,6 +1,6 @@
-﻿using ConstructorAdminAPI.Core.Shared;
+﻿using Constructor_API.Core.Shared;
 
-namespace ConstructorAdminAPI.Infractructure
+namespace Constructor_API.Infractructure
 {
     public class MongoUnitOfWork : IUnitOfWork
     {

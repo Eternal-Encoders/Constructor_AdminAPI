@@ -1,9 +1,10 @@
-using ConstructorAdminAPI.Application.Services;
-using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Infractructure;
-using ConstructorAdminAPI.Infractructure.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
+using Constructor_API.Application.Services;
+using Constructor_API.Core.Repositories;
+using Constructor_API.Infractructure;
+using Constructor_API.Infractructure.Repositories;
+using Microsoft.Extensions.Options;
+using System.Reflection;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,11 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(opt =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<MongoDBContext>();

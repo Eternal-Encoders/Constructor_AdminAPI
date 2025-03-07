@@ -1,24 +1,40 @@
-﻿using ConstructorAdminAPI.Application.Result;
-using ConstructorAdminAPI.Application.Services;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Application.Result;
+using Constructor_API.Application.Services;
+using Constructor_API.Models.DTOs;
+using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using System.Threading;
 
-namespace ConstructorAdminAPI.Controllers
+namespace Constructor_API.Controllers
 {
-    [Route("buildings")]
+    [Route("BuildingController")]
     [ApiController]
     public class BuildingController : ControllerBase
     {
         private readonly BuildingService _buildingService;
+
+        //возможно в будущем реализую
+        //private static Dictionary<int, Func<StatusCodeResult>> replies = new Dictionary<int, Func<StatusCodeResult>>
+        //{
+        //    [404] = NotFound()
+        //};
 
         public BuildingController(BuildingService buildingService)
         {
             _buildingService = buildingService;
         }
 
-        [HttpPost]
+        /// <summary>
+        /// Добавляет здание в БД
+        /// </summary>
+        /// <param name="buildingDto">JSON объект, представляющий информацию о здании</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Ремарка
+        /// </remarks>
+        [HttpPost("building")]
         public async Task<IActionResult> PostBuilding([FromBody] CreateBuildingDto? buildingDto)
         {
             if (buildingDto == null) return BadRequest("Wrong input");
@@ -32,6 +48,15 @@ namespace ConstructorAdminAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Возвращает здание по query-параметру
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа, учитывается первым</param>
+        /// <param name="name">Название здания</param>
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("building")]
         public async Task<IActionResult> GetBuilding([FromQuery] string? id, [FromQuery] string? name)
         {
@@ -39,20 +64,38 @@ namespace ConstructorAdminAPI.Controllers
 
             if (id != null)
             {
+                if (ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
                 res = await _buildingService.GetBuildingById(id, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
+                if (!res.IsSuccessfull)
+                {
+                    var err = res.GetErrors()[0];
+                    return err._code switch
+                    {
+                        404 => NotFound(res.GetErrors()[0]._message),
+                        _ => BadRequest(res.GetErrors()[0]._message),
+                    };
+                }
 
                 return Ok(res.Value);
             }
             else if (name != null) 
             {
                 res = await _buildingService.GetBuildingByName(name, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
+                if (!res.IsSuccessfull)
+                {
+                    var err = res.GetErrors()[0];
+                    return err._code switch
+                    {
+                        404 => NotFound(res.GetErrors()[0]._message),
+                        _ => BadRequest(res.GetErrors()[0]._message),
+                    };
+                }
 
                 return Ok(res.Value);
             }
 
-            return BadRequest("Wrong input");
+            return BadRequest("Wrong input: parameters not specified");
         }
 
         //[HttpGet]
@@ -76,7 +119,11 @@ namespace ConstructorAdminAPI.Controllers
 
         //    return Ok(building.Value);
         //}
-
+        
+        /// <summary>
+        /// Возвращает массив всех зданий
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetAllBuildings()
         {

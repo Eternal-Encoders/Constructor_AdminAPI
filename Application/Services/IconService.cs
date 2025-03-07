@@ -1,4 +1,4 @@
-﻿namespace ConstructorAdminAPI.Application.Services
+﻿namespace Constructor_API.Application.Services
 {
     public class IconService
     {

@@ -1,13 +1,13 @@
-﻿using ConstructorAdminAPI.Application.Result;
-using ConstructorAdminAPI.Application.Services;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Application.Result;
+using Constructor_API.Application.Services;
+using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace ConstructorAdminAPI.Controllers
+namespace Constructor_API.Controllers
 {
-    [Route("graphPoints")]
+    [Route("GraphPointController")]
     [ApiController]
     public class GraphPointController : ControllerBase
     {
@@ -18,7 +18,12 @@ namespace ConstructorAdminAPI.Controllers
             _graphPointService = graphPointService;
         }
 
-        [HttpPost]
+        /// <summary>
+        /// Добавляет точку графа в БД
+        /// </summary>
+        /// <param name="graphPoint">JSON объект, представляющий информацию о точке графа</param>
+        /// <returns></returns>
+        [HttpPost("graphPoint")]
         public async Task<IActionResult> PostGraphPoint([FromBody] GraphPoint? graphPoint)
         {
             if (graphPoint == null) return BadRequest("Wrong input");
@@ -32,17 +37,55 @@ namespace ConstructorAdminAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Добавляет массив точек графа в БД
+        /// </summary>
+        /// <param name="graphPoints">Массив JSON объектов, представляющих информацию о точках графа</param>
+        /// <returns></returns>
+        [HttpPost("graphPoints")]
+        public async Task<IActionResult> PostGraphPoints([FromBody] GraphPoint[]? graphPoints)
+        {
+            if (graphPoints == null || graphPoints.Count() == 0) return BadRequest("Wrong input");
+
+            var res = await _graphPointService.InsertGraphPoints(graphPoints, CancellationToken.None);
+
+            if (res.IsSuccessfull) return Ok();
+            else
+            {
+                return BadRequest(res.GetErrors()[0]._message);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает точку графа по query-параметру
+        /// </summary>
+        /// <param name="id">ID точки графа, 24 символа, учитывается первым</param>
+        /// <returns></returns>
         [HttpGet("graphPoint")]
         public async Task<IActionResult> GetGraphPointById([FromQuery] string? id)
         {
             if (id == null) return BadRequest("Wrong input");
 
-            var graphPoint = await _graphPointService.GetGraphPointById(id, CancellationToken.None);
-            if (!graphPoint.IsSuccessfull) return BadRequest(graphPoint.GetErrors()[0]._message);
+            var res = await _graphPointService.GetGraphPointById(id, CancellationToken.None);
+            if (!res.IsSuccessfull)
+            {
+                var err = res.GetErrors()[0];
+                return err._code switch
+                {
+                    404 => NotFound(res.GetErrors()[0]._message),
+                    _ => BadRequest(res.GetErrors()[0]._message),
+                };
+            }
 
-            return Ok(graphPoint.Value);
+            return Ok(res.Value);
         }
 
+        /// <summary>
+        /// Возвращает массив точек графа по query-параметру
+        /// </summary>
+        /// <param name="buildingName">Название здания</param>
+        /// <param name="floorNum">Номер этажа, учитывается вместе с названием здания</param>
+        /// <returns></returns>
         [HttpGet("graphPoints")]
         public async Task<IActionResult> GetGraphPoints([FromQuery] string? buildingName, [FromQuery] int? floorNum)
         {
@@ -53,14 +96,30 @@ namespace ConstructorAdminAPI.Controllers
                 if (floorNum != null)
                 {
                     res = await _graphPointService.GetGraphPointsByFloor(buildingName, floorNum.Value, CancellationToken.None);
-                    if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
+                    if (!res.IsSuccessfull)
+                    {
+                        var err = res.GetErrors()[0];
+                        return err._code switch
+                        {
+                            404 => NotFound(res.GetErrors()[0]._message),
+                            _ => BadRequest(res.GetErrors()[0]._message),
+                        };
+                    }
 
                     return Ok(res.Value);
                 }
                 else
                 {
                     res = await _graphPointService.GetGraphPointsByBuilding(buildingName, CancellationToken.None);
-                    if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
+                    if (!res.IsSuccessfull)
+                    {
+                        var err = res.GetErrors()[0];
+                        return err._code switch
+                        {
+                            404 => NotFound(res.GetErrors()[0]._message),
+                            _ => BadRequest(res.GetErrors()[0]._message),
+                        };
+                    }
 
                     return Ok(res.Value);
                 }
@@ -91,13 +150,25 @@ namespace ConstructorAdminAPI.Controllers
         //    return Ok(graphPoints.Value);
         //}
 
+        /// <summary>
+        /// Возвращает массив всех точек графа
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetAllGraphPoints()
         {
-            var graphPoints = await _graphPointService.GetAllGraphPoints(CancellationToken.None);
-            if (!graphPoints.IsSuccessfull) return BadRequest(graphPoints.GetErrors()[0]._message);
+            var res = await _graphPointService.GetAllGraphPoints(CancellationToken.None);
+            if (!res.IsSuccessfull)
+            {
+                var err = res.GetErrors()[0];
+                return err._code switch
+                {
+                    404 => NotFound(res.GetErrors()[0]._message),
+                    _ => BadRequest(res.GetErrors()[0]._message),
+                };
+            }
 
-            return Ok(graphPoints.Value);
+            return Ok(res.Value);
         }
     }
 }

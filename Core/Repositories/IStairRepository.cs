@@ -1,7 +1,7 @@
-﻿using ConstructorAdminAPI.Core.Shared.Storage;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Core.Shared.Storage;
+using Constructor_API.Models.Entities;
 
-namespace ConstructorAdminAPI.Core.Repositories
+namespace Constructor_API.Core.Repositories
 {
     public interface IStairRepository : IRepository<Stair>
     {

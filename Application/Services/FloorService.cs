@@ -1,37 +1,38 @@
 ﻿using AutoMapper;
-using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+using Constructor_API.Core.Repositories;
+using Constructor_API.Models.DTOs;
+using Constructor_API.Models.Entities;
 using MongoDB.Bson;
 
-namespace ConstructorAdminAPI.Application.Services
+namespace Constructor_API.Application.Services
 {
     public class FloorService
     {
         IFloorRepository _floorRepository;
         IGraphPointRepository _graphPointRepository;
         IStairRepository _stairRepository;
+        IBuildingRepository _buildingRepository;
         IMapper _mapper;
 
         public FloorService(IFloorRepository floorRepository, IGraphPointRepository graphPointRepository,
-            IStairRepository stairRepository, IMapper mapper)
+            IStairRepository stairRepository, IBuildingRepository buildingRepository, IMapper mapper)
         {
             _floorRepository = floorRepository;
             _graphPointRepository = graphPointRepository;
             _stairRepository = stairRepository;
+            _buildingRepository = buildingRepository;
             _mapper = mapper;
         }
 
         public async Task<Result.Result> InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
         {
-            //Result.Result result = new();
             if (await _floorRepository.FirstOrDefaultAsync(f =>
                 f.Building == floorDto.Building && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != null)
                 return Result.Result.Error(new Result.Error("Floor already exists", 400));
 
-            //if (await _buildingRepository.FirstOrDefaultAsync(b =>
-            //   b.Name == floorDto.Building, cancellationToken) == null)
-            //    return Result.Result.Error(new Result.Error("Building doesn`t exist", 404));
+            if (await _buildingRepository.FirstOrDefaultAsync(b =>
+               b.Name == floorDto.Building, cancellationToken) == null)
+                return Result.Result.Error(new Result.Error("Building doesn`t exist", 404));
 
             var graphPoints = floorDto.GraphPoints == null ? [] : floorDto.GraphPoints;
             List<string> graphIds = [];
@@ -87,7 +88,7 @@ namespace ConstructorAdminAPI.Application.Services
             Floor floor = _mapper.Map<Floor>(floorDto);
             floor.Id = ObjectId.GenerateNewId().ToString();
             floor.GraphPoints = graphIds.ToArray();
-            floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
+            //floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
 
             await _floorRepository.AddAsync(floor, cancellationToken);
             await _graphPointRepository.AddRangeAsync(graphPoints.Values.ToArray(), cancellationToken);
