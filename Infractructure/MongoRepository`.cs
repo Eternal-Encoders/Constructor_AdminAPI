@@ -35,11 +35,11 @@ namespace Constructor_API.Infractructure
             }
         }
 
-        public override async Task RemoveByIdAsync(string id, CancellationToken cancellationToken)
+        public override async Task RemoveAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.DeleteOneAsync(Builders<TAggregateRoot>.Filter.Eq("_id", new ObjectId(id))));
+                _dbContext.AddCommand(() => DbSet.DeleteOneAsync(predicate));
             }
         }
 
@@ -51,36 +51,12 @@ namespace Constructor_API.Infractructure
             }
         }
 
-        public override async Task RemoveRangeByIdsAsync(string[] Ids, CancellationToken cancellationToken)
+        public override async Task UpdateAsync(Expression<Func<TAggregateRoot, bool>> predicate, TAggregateRoot aggregateRoot, CancellationToken cancellationToken)
         {
             if (!ReadOnly)
             {
-
+                _dbContext.AddCommand(() => DbSet.ReplaceOneAsync(predicate, aggregateRoot));
             }
-            throw new NotImplementedException();
-        }
-
-        public override async Task UpdateAsync(string id, TAggregateRoot aggregateRoot, CancellationToken cancellationToken)
-        {
-            if (!ReadOnly)
-            {
-                _dbContext.AddCommand(() => DbSet.ReplaceOneAsync(Builders<TAggregateRoot>.Filter.Eq("_id", new ObjectId(id)), aggregateRoot));
-            }
-        }
-
-        public override async Task<int> CountAsync(CancellationToken cancellationToken)
-        {
-            return Convert.ToInt32(await DbSet.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty));
-        }
-
-        public override async Task<int> CountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
-        {
-            return Convert.ToInt32(await DbSet.CountDocumentsAsync(predicate));
-        }
-
-        public override async Task<TAggregateRoot?> FindAsync(object[] keyValues, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
 
         public override async Task<TAggregateRoot> FirstAsync(CancellationToken cancellationToken)
@@ -125,6 +101,16 @@ namespace Constructor_API.Infractructure
         public override async Task<long> LongCountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
             return await DbSet.CountDocumentsAsync(predicate);
+        }
+
+        public override async Task<int> CountAsync(CancellationToken cancellationToken)
+        {
+            return Convert.ToInt32(await DbSet.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty));
+        }
+
+        public override async Task<int> CountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
+        {
+            return Convert.ToInt32(await DbSet.CountDocumentsAsync(predicate));
         }
 
         public override async Task SaveChanges()

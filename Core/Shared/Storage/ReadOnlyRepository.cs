@@ -10,8 +10,6 @@ namespace Constructor_API.Core.Shared.Storage
 
         public abstract Task<int> CountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken);
 
-        public abstract Task<TAggregateRoot?> FindAsync(object[] keyValues, CancellationToken cancellationToken);
-
         public abstract Task<TAggregateRoot> FirstAsync(CancellationToken cancellationToken);
 
         public abstract Task<TAggregateRoot> FirstAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken);

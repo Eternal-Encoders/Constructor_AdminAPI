@@ -46,7 +46,7 @@ namespace Constructor_API.Application.Services
                     stair.Links = stair.Links == null ? [] : stair.Links;
 
                     stair.Links.Append(graphPoint.Id);
-                    await _stairRepository.UpdateAsync(stair.Id, stair, cancellationToken);
+                    await _stairRepository.UpdateAsync(s => s.Id == stair.Id, stair, cancellationToken);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Constructor_API.Application.Services
                         stair.Links = stair.Links == null ? [] : stair.Links;
 
                         stair.Links.Append(graphPoint.Id);
-                        await _stairRepository.UpdateAsync(stair.Id, stair, cancellationToken);
+                        await _stairRepository.UpdateAsync(s => s.Id == stair.Id, stair, cancellationToken);
                     }
                 }
             }

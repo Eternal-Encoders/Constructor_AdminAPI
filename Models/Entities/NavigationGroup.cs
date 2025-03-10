@@ -1,10 +1,11 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
+using Constructor_API.Core.Shared;
 
 namespace Constructor_API.Models.Entities
 {
-    public class NavigationSet
+    public class NavigationGroup : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]

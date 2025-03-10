@@ -82,7 +82,7 @@ namespace Constructor_API.Application.Services
 
             for (int i = 0; i < stairs.Count; i++)
             {
-                await _stairRepository.UpdateAsync(stairs[i].Id, stairs[i], cancellationToken);
+                await _stairRepository.UpdateAsync(s => s.Id == stairs[i].Id, stairs[i], cancellationToken);
             }
 
             Floor floor = _mapper.Map<Floor>(floorDto);

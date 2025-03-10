@@ -5,7 +5,6 @@ namespace Constructor_API.Core.Shared.Storage
     public interface IReadOnlyRepository<TAggregateRoot> where TAggregateRoot : IAggregateRoot
     {
         bool ReadOnly { get; set; }
-        Task<TAggregateRoot?> FindAsync(object[] keyValues, CancellationToken cancellationToken);
 
         Task<IReadOnlyList<TAggregateRoot>> ListAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken);
         Task<IReadOnlyList<TAggregateRoot>> ListAsync(CancellationToken cancellationToken);
