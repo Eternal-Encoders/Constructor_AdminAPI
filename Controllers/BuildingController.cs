@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Constructor_API.Controllers
 {
-    [Route("BuildingController")]
+    [Route("building")]
     [ApiController]
     public class BuildingController : ControllerBase
     {
@@ -30,24 +30,17 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет здание в БД
         /// </summary>
-        /// <param name="buildingDto">JSON объект, представляющий информацию о здании</param>
-        /// <param name="navGroupId">ID группы навигации, которой принадлежит здание, 24 символа</param>
         /// <returns></returns>
-        [HttpPost("building/{navGroupId}")]
-        public async Task<IActionResult> PostBuilding([FromBody] CreateBuildingDto? buildingDto,
-            string navGroupId)
+        [HttpPost]
+        public async Task<IActionResult> PostBuilding([FromBody] CreateBuildingDto? buildingDto)
         {
             if (buildingDto == null) return BadRequest("Wrong input");
 
-            var res = await _buildingService.InsertBuilding(buildingDto, navGroupId, CancellationToken.None);
-
-            if (res.IsSuccessfull) return Ok();
-            else
-            {
-                return BadRequest(res.GetErrors()[0]._message);
-            }
+            await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
+            return Created();
         }
 
+        //Пример заполнения:
         /// <summary>
         /// Возвращает здание по query-параметру
         /// </summary>
@@ -66,100 +59,61 @@ namespace Constructor_API.Controllers
         /// <response code="200">Возвращает найденный по параметрам объект</response>
         /// <response code="400">Если неправильно указаны параметры запроса</response>
         /// <response code="404">Если объекта нет в базе данных</response>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("building")]
-        public async Task<IActionResult> GetBuilding([FromQuery] string? id, [FromQuery] string? name)
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        /// <summary>
+        /// Возвращает здание по ID
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetBuildingById(string? id)
         {
-            Result<Building> res;
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            if (id != null)
-            {
-                if (ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+            var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
 
-                res = await _buildingService.GetBuildingById(id, CancellationToken.None);
-                if (!res.IsSuccessfull)
-                {
-                    var err = res.GetErrors()[0];
-                    return err._code switch
-                    {
-                        404 => NotFound(res.GetErrors()[0]._message),
-                        _ => BadRequest(res.GetErrors()[0]._message),
-                    };
-                }
-
-                return Ok(res.Value);
-            }
-            else if (name != null) 
-            {
-                res = await _buildingService.GetBuildingByName(name, CancellationToken.None);
-                if (!res.IsSuccessfull)
-                {
-                    var err = res.GetErrors()[0];
-                    return err._code switch
-                    {
-                        404 => NotFound(res.GetErrors()[0]._message),
-                        _ => BadRequest(res.GetErrors()[0]._message),
-                    };
-                }
-
-                return Ok(res.Value);
-            }
-
-            return BadRequest("Wrong input: parameters not specified");
+            return Ok(building);
         }
 
-        [HttpGet("buildings")]
-        public async Task<IActionResult> GetBuildings([FromQuery] string? navGroupId)
+        /// <summary>
+        /// Возвращает все этажи в здании
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/floors")]
+        public async Task<IActionResult> GetFloorsByBuilding(string? id)
         {
-            Result<IReadOnlyList<Building>> res;
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            if (navGroupId != null)
-            {
-                if (ObjectId.TryParse(navGroupId, out _)) return BadRequest(
-                    "Wrong input: specified ID is not a valid 24 digit hex string");
+            var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
 
-                res = await _buildingService.GetBuildingsByNavGroupId(navGroupId, CancellationToken.None);
-                if (!res.IsSuccessfull)
-                {
-                    var err = res.GetErrors()[0];
-                    return err._code switch
-                    {
-                        404 => NotFound(res.GetErrors()[0]._message),
-                        _ => BadRequest(res.GetErrors()[0]._message),
-                    };
-                }
-
-                return Ok(res.Value);
-            }
-
-            return BadRequest("Wrong input: parameters not specified");
+            return Ok(floors);
         }
 
+        /// <summary>
+        /// Возвращает этаж в здании по номеру этажа
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <param name="number">Номер этажа</param> 
+        /// <returns></returns>
+        [HttpGet("{id}/floor/{number}")]
+        public async Task<IActionResult> GetFloorInBuildingByNumber(string? id, int number)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
+            var floor = await _buildingService.GetFloorInBuildingByNumber(id, number, CancellationToken.None);
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetBuildingById([FromQuery] string? id)
-        //{
-        //    if (id == null) return BadRequest("Wrong input");
-
-        //    var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
-        //    if (!building.IsSuccessfull) return BadRequest(building.GetErrors()[0]._message);
-
-        //    return Ok(building.Value);
-        //}
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetBuildingByName([FromQuery] string? name)
-        //{
-        //    if (name == null) return BadRequest("Wrong input");
-
-        //    var building = await _buildingService.GetBuildingByName(name, CancellationToken.None);
-        //    if (!building.IsSuccessfull) return BadRequest(building.GetErrors()[0]._message);
-
-        //    return Ok(building.Value);
-        //}
+            return Ok(floor);
+        }
 
         /// <summary>
         /// Возвращает массив всех зданий
@@ -170,7 +124,7 @@ namespace Constructor_API.Controllers
         {
             var buildings = await _buildingService.GetAllBuildings(CancellationToken.None);
 
-            return Ok(buildings.Value);
+            return Ok(buildings);
         }
     }
 }

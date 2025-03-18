@@ -1,8 +1,8 @@
 ﻿namespace Constructor_API.Application.Services
 {
-    public class IconService
+    public class ImageService
     {
-        public IconService() 
+        public ImageService() 
         { 
 
         }

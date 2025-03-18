@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Constructor_API.Core.Repositories;
+using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs;
 using Constructor_API.Models.Entities;
 using MongoDB.Bson;
@@ -9,76 +10,95 @@ namespace Constructor_API.Application.Services
     public class BuildingService
     {
         IBuildingRepository _buildingRepository;
-        INavigationGroupRepository _navigationGroupRepository;
+        IProjectRepository _projectRepository;
+        IFloorRepository _floorRepository;
+        IGraphPointRepository _graphPointRepository;
         IMapper _mapper;
 
         public BuildingService(IBuildingRepository buildingRepository, IMapper mapper,
-            INavigationGroupRepository navigationGroupRepository)
+            IProjectRepository projectRepository, IFloorRepository floorRepository,
+            IGraphPointRepository graphPointRepository)
         {
             _buildingRepository = buildingRepository;
             _mapper = mapper;
-            _navigationGroupRepository = navigationGroupRepository;
+            _projectRepository = projectRepository;
+            _floorRepository = floorRepository;
+            _graphPointRepository = graphPointRepository;
         }
 
-        public async Task<Result.Result> InsertBuilding(CreateBuildingDto buildingDto, string navGroupId,
-            CancellationToken cancellationToken)
+        public async Task InsertBuilding(CreateBuildingDto buildingDto, CancellationToken cancellationToken)
         {
             var building = _mapper.Map<Building>(buildingDto);
             building.Id = ObjectId.GenerateNewId().ToString();
 
-            var navGroup = await _navigationGroupRepository.FirstAsync(g => g.Id == navGroupId, cancellationToken);
-            if (navGroup == null) return Result.Result.Error(new Result.Error("Navigation group not found", 404));
+            var project = await _projectRepository.FirstAsync(g => g.Id == buildingDto.ProjectId, cancellationToken);
+            if (project == null) throw new NotFoundException("Project not found");
             else 
             {
-                navGroup.BuildingIds.Append(building.Id);
-                await _navigationGroupRepository.UpdateAsync(g => g.Id == navGroupId, navGroup, cancellationToken);
+                project.BuildingIds.Append(building.Id);
+                await _projectRepository.UpdateAsync(g => g.Id == buildingDto.ProjectId, project, cancellationToken);
             }
 
             await _buildingRepository.AddAsync(building, cancellationToken);
             await _buildingRepository.SaveChanges();
-            
-            return Result.Result.Success();
         }
 
-        public async Task<Result.Result<Building>> GetBuildingById(string id, CancellationToken cancellationToken)
+        public async Task<Building> GetBuildingById(string id, CancellationToken cancellationToken)
         {
             var building = await _buildingRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            if (building == null) return Result.Result<Building>.Error(new Result.Error("Building not found", 404));
+            if (building == null) throw new NotFoundException("Building not found");
 
-            return Result.Result<Building>.Success(building);
+            return building;
         }
 
-        public async Task<Result.Result<Building>> GetBuildingByName(string name, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Floor>> GetFloorsByBuilding(string buildingId, CancellationToken cancellationToken)
         {
-            var building = await _buildingRepository.FirstOrDefaultAsync(b => b.Name == name, cancellationToken);
-            if (building == null) return Result.Result<Building>.Error(new Result.Error("Building not found", 404));
-
-            return Result.Result<Building>.Success(building);
+            var res = await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
+            return res;
         }
 
-        public async Task<Result.Result<IReadOnlyList<Building>>> GetBuildingsByNavGroupId(string navGroupId, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<GetFloorDto>> GetFloorsByBuildingWithGraphPoints(string buildingId,
+            CancellationToken cancellationToken)
         {
-            var navGroup = await _navigationGroupRepository.FirstOrDefaultAsync(g => g.Id == navGroupId, cancellationToken);
-            if (navGroup == null) return Result.Result<IReadOnlyList<Building>>.Error(new Result.Error(
-                "Navigation group not found", 404));
+            var floors = await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
+            List<GetFloorDto> res = [];
 
-            //Building[] buildings = new Building[navGroup.BuildingIds.Length];
-            //foreach (var id in navGroup.BuildingIds)
-            //{
+            for(int i = 0; i < floors.Count; i++)
+            {
+                res.Add(_mapper.Map<GetFloorDto>(floors[i]));
 
-            //}
-            var buildings = await _buildingRepository.ListAsync(b => navGroup.BuildingIds.Contains(b.Id),
-                cancellationToken);
+                res[i].GraphPoints = (await _graphPointRepository.ListAsync(g => g.FloorId == floors[i].Id, cancellationToken))
+                    .ToArray();
+            }
 
-            if (buildings == null) return Result.Result<IReadOnlyList<Building>>.Success([]);
-
-            return Result.Result<IReadOnlyList<Building>>.Success(buildings);
+            return res;
         }
 
-        public async Task<Result.Result<IReadOnlyList<Building>>> GetAllBuildings(CancellationToken cancellationToken)
+        public async Task<Floor> GetFloorInBuildingByNumber(string buildingId, int number, CancellationToken cancellationToken)
+        {
+            var res = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
+                f.FloorNumber == number, cancellationToken);
+            if (res == null) throw new NotFoundException("Floor not found");
+            return res;
+        }
+
+        public async Task<GetFloorDto> GetFloorInBuildingByNumberWithGraphPoints(string buildingId,
+            int number, CancellationToken cancellationToken)
+        {
+            var floor = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
+                f.FloorNumber == number, cancellationToken);
+
+            var res = _mapper.Map<GetFloorDto>(floor);
+            res.GraphPoints = (await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken))
+                    .ToArray();
+
+            return res;
+        }
+
+        public async Task<IReadOnlyList<Building>> GetAllBuildings(CancellationToken cancellationToken)
         {
             var buildings = await _buildingRepository.ListAsync(cancellationToken);
-            return Result.Result<IReadOnlyList<Building>>.Success(buildings);
+            return buildings;
         }
     }
 }

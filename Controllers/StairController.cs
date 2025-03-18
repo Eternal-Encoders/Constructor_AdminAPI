@@ -2,10 +2,11 @@
 using Constructor_API.Application.Services;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace Constructor_API.Controllers
 {
-    [Route("StairController")]
+    [Route("stair")]
     [ApiController]
     public class StairController : ControllerBase
     {
@@ -15,17 +16,6 @@ namespace Constructor_API.Controllers
         {
             _stairService = stairService;
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetStairById([FromQuery] string? id)
-        //{
-        //    if (id == null) return BadRequest("Wrong input");
-
-        //    var stair = await _stairService.GetStairById(id, CancellationToken.None);
-        //    if (!stair.IsSuccessfull) return BadRequest(stair.GetErrors()[0]._message);
-
-        //    return Ok(stair.Value);
-        //}
 
         //[HttpGet]
         //public async Task<IActionResult> GetStairByGraphPoint([FromQuery] string? graphPointId)
@@ -41,44 +31,19 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Возвращает лестницу по query-параметру
         /// </summary>
-        /// <param name="id">ID лестницы, 24 символа, учитывается первым</param>
-        /// <param name="graphPointId">ID точки графа, соответствующей лестнице, 24 символа</param>
+        /// <param name="id">ID лестницы, 24 символа</param>
         /// <returns></returns>
-        [HttpGet("stair")]
-        public async Task<IActionResult> GetStair([FromQuery] string? id, [FromQuery] string? graphPointId)
+        [HttpGet("{stairId}")]
+        public async Task<IActionResult> GetStairById(string id)
         {
-            Result<Stair> res; 
-
             if (id != null)
             {
-                res = await _stairService.GetStairById(id, CancellationToken.None);
-                if (!res.IsSuccessfull)
-                {
-                    var err = res.GetErrors()[0];
-                    return err._code switch
-                    {
-                        404 => NotFound(res.GetErrors()[0]._message),
-                        _ => BadRequest(res.GetErrors()[0]._message),
-                    };
-                }
+                if (!ObjectId.TryParse(id, out _))
+                    return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-                return Ok(res.Value);
+                return Ok(await _stairService.GetStairById(id, CancellationToken.None));
             }
-            else if (graphPointId != null)
-            {
-                res = await _stairService.GetStairByGraphPoint(graphPointId, CancellationToken.None);
-                if (!res.IsSuccessfull)
-                {
-                    var err = res.GetErrors()[0];
-                    return err._code switch
-                    {
-                        404 => NotFound(res.GetErrors()[0]._message),
-                        _ => BadRequest(res.GetErrors()[0]._message),
-                    };
-                }
-
-                return Ok(res.Value);
-            }
+            
             else return BadRequest("Wrong input");
         }
 
@@ -87,24 +52,24 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <param name="buildingName">Название здания</param>
         /// <returns></returns>
-        [HttpGet("stairs")]
-        public async Task<IActionResult> GetStairsByBuilding([FromQuery] string? buildingName)
-        {
-            if (buildingName == null) return BadRequest("Wrong input");
+        //[HttpGet("stairs")]
+        //public async Task<IActionResult> GetStairsByBuilding([FromQuery] string? buildingName)
+        //{
+        //    if (buildingName == null) return BadRequest("Wrong input");
 
-            var res = await _stairService.GetStairsByBuilding(buildingName, CancellationToken.None);
-            if (!res.IsSuccessfull)
-            {
-                var err = res.GetErrors()[0];
-                return err._code switch
-                {
-                    404 => NotFound(res.GetErrors()[0]._message),
-                    _ => BadRequest(res.GetErrors()[0]._message),
-                };
-            }
+        //    var res = await _stairService.GetStairsByBuilding(buildingName, CancellationToken.None);
+        //    if (!res.IsSuccessfull)
+        //    {
+        //        var err = res.GetErrors()[0];
+        //        return err._code switch
+        //        {
+        //            404 => NotFound(res.GetErrors()[0]._message),
+        //            _ => BadRequest(res.GetErrors()[0]._message),
+        //        };
+        //    }
 
-            return Ok(res.Value);
-        }
+        //    return Ok(res.Value);
+        //}
 
         /// <summary>
         /// Возвращает массив всех лестниц
@@ -114,17 +79,8 @@ namespace Constructor_API.Controllers
         public async Task<IActionResult> GetAllStairs()
         { 
             var res = await _stairService.GetAllStairs(CancellationToken.None);
-            if (!res.IsSuccessfull)
-            {
-                var err = res.GetErrors()[0];
-                return err._code switch
-                {
-                    404 => NotFound(res.GetErrors()[0]._message),
-                    _ => BadRequest(res.GetErrors()[0]._message),
-                };
-            }
 
-            return Ok(res.Value);
+            return Ok(res);
         }
     }
 }

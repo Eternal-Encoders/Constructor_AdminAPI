@@ -1,5 +1,6 @@
 ﻿using Constructor_API.Core.Shared;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
@@ -11,17 +12,14 @@ namespace Constructor_API.Models.Entities
         [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [BsonElement("stairPoint")]
-        [JsonPropertyName("stairPoint")]
-        public string StairPoint { get; set; }
-
-        [BsonElement("institute")]
-        [JsonPropertyName("institute")]
-        public string Building { get; set; }
+        [BsonElement("building_id")]
+        [JsonPropertyName("building_id")]
+        [Required]
+        [StringLength(24)]
+        public string BuildingId { get; set; }
 
         [BsonElement("links")]
         [JsonPropertyName("links")]
-        [BsonIgnoreIfNull]
         public string[]? Links { get; set; }
     }
 }

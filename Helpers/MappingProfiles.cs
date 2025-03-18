@@ -9,9 +9,10 @@ namespace Constructor_API.Helpers
         public MappingProfiles() 
         {
             CreateMap<CreateFloorDto, Floor>().ForMember(x => x.Rooms, opt => opt.Ignore());
+            CreateMap<Floor, GetFloorDto>();
             CreateMap<CreateBuildingDto, Building>();
-            //CreateMap<CreateGraphPointDto, GraphPoint>();
-            //CreateMap<CreateStairDto, Stair>();
+            CreateMap<GraphPointFromFloorDto, GraphPoint>();
+            CreateMap<CreateProjectDto, Project>();
         }
     }
 }

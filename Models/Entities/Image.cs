@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
 {
-    public class Icon : IAggregateRoot
+    public class Image : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]
@@ -13,12 +13,20 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonElement("name")]
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
         [BsonElement("url")]
         [JsonPropertyName("url")]
         public string Url { get; set; }
 
-        [BsonElement("alt")]
-        [JsonPropertyName("alt")]
-        public string Alt { get; set; }
+        [BsonElement("filesize")]
+        [JsonPropertyName("filesize")]
+        public string? Filesize { get; set; }
+
+        [BsonElement("created_at")]
+        [JsonPropertyName("created_at")]
+        public DateTime CreatedAt { get; set; }
     }
 }

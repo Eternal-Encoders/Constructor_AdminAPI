@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
@@ -43,10 +44,12 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("from")]
         [JsonPropertyName("from")]
+        [Required]
         public string From { get; set; }
 
         [BsonElement("to")]
         [JsonPropertyName("to")]
+        [Required]
         public string To { get; set; }
 }
 }

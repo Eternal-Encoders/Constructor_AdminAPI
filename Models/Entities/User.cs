@@ -22,8 +22,8 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string Hash { get; set; }
 
-        [BsonElement("navigation_sets")]
-        [JsonPropertyName("navigation_sets")]
-        public string[] NavSetIds { get; set; }
+        [BsonElement("projects")]
+        [JsonPropertyName("projects")]
+        public string[] ProjectIds { get; set; }
     }
 }

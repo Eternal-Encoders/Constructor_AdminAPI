@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Core.Shared;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
@@ -15,29 +16,35 @@ namespace Constructor_API.Models.Entities
         [BsonElement("x")]
         [JsonPropertyName("x")]
         [JsonRequired]
+        [Required]
         public double X { get; set; }
 
         [BsonElement("y")]
         [JsonPropertyName("y")]
         [JsonRequired]
+        [Required]
         public double Y { get; set; }
 
         [BsonElement("width")]
         [JsonPropertyName("width")]
         [JsonRequired]
+        [Required]
         public double Width { get; set; }
 
         [BsonElement("height")]
         [JsonPropertyName("height")]
         [JsonRequired]
+        [Required]
         public double Height { get; set; }
 
         [BsonElement("fill")]
         [JsonPropertyName("fill")]
+        [Required]
         public string? Fill { get; set; }
 
         [BsonElement("stroke")]
         [JsonPropertyName("stroke")]
+        [Required]
         public string? Stroke { get; set; }
 
         //[BsonElement("pointId")]
@@ -46,11 +53,13 @@ namespace Constructor_API.Models.Entities
         [BsonElement("children")]
         [JsonPropertyName("children")]
         [BsonIgnoreIfNull]
+        [Required]
         public RoomChild[]? Children { get; set; }
 
         [BsonElement("doors")]
         [JsonPropertyName("doors")]
         [BsonIgnoreIfNull]
+        [Required]
         public Door[]? Doors { get; set; }
     }
 

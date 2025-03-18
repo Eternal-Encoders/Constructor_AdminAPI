@@ -1,14 +1,14 @@
-﻿using Constructor_API.Core.Shared;
-using Constructor_API.Helpers.Attributes;
-using MongoDB.Bson;
+﻿using Constructor_API.Models.Entities;
 using MongoDB.Bson.Serialization.Attributes;
-using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
+using Constructor_API.Helpers.Attributes;
 
-namespace Constructor_API.Models.Entities
+namespace Constructor_API.Models.DTOs
 {
     [PointType]
-    public class GraphPoint : IAggregateRoot
+    public class GraphPointFromFloorDto
     {
         private static readonly Dictionary<string, string> pointTypes = new Dictionary<string, string>()
         {
@@ -33,93 +33,77 @@ namespace Constructor_API.Models.Entities
             ["other"] = "other"
         };
 
-        [BsonId]
-        [BsonElement("_id")]
         [JsonPropertyName("id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [JsonRequired]
         [Required]
         [StringLength(24)]
         public string Id { get; set; }
 
-        [BsonElement("x")]
         [JsonPropertyName("x")]
-        [BsonRequired]
+        [JsonRequired]
         [Required]
         public double X { get; set; }
 
-        [BsonElement("y")]
         [JsonPropertyName("y")]
-        [BsonRequired]
+        [JsonRequired]
         [Required]
         public double Y { get; set; }
 
-        [BsonElement("links")]
         [JsonPropertyName("links")]
-        [BsonRequired]
+        [JsonRequired]
         [Required]
         public string[] Links { get; set; }
 
         private string[] types;
-        [BsonElement("types")]
         [JsonPropertyName("types")]
-        [BsonRequired]
+        [JsonRequired]
         [Required]
-        public string[] Types {
+        public string[] Types
+        {
             get { return types; }
-            set 
+            set
             {
                 types = value;
                 types = types.Where(x => pointTypes.ContainsKey(x)).ToArray();
             }
-        } 
+        }
 
-        [BsonElement("names")]
         [JsonPropertyName("names")]
-        [BsonRequired]
+        [JsonRequired]
         [Required]
         public string[] Names { get; set; }
 
-        [BsonElement("floor")]
-        [JsonPropertyName("floor")]
-        [StringLength(24)]
-        [BsonRequired]
-        [Required]
-        public string FloorId { get; set; }
+        //[JsonPropertyName("floor")]
+        //[JsonRequired]
+        //[Required]
+        //public int Floor { get; set; }
 
-        //[BsonElement("building")]
         //[JsonPropertyName("building")]
-        //[BsonRequired]
+        //[JsonRequired]
+        //[Required]
         //public string Building { get; set; }
 
-        [BsonElement("time")]
         [JsonPropertyName("time")]
-        [BsonIgnoreIfNull]
+        //[BsonIgnoreIfNull]
         //public Schedule[]? Time { get; set; }
         public Day[]? Time { get; set; }
 
-        [BsonElement("description")]
         [JsonPropertyName("description")]
-        [BsonRequired]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        [BsonElement("info")]
         [JsonPropertyName("info")]
-        [BsonRequired]
-        public string Info { get; set; }
+        public string? Info { get; set; }
 
-        [BsonElement("isPassFree")]
-        [JsonPropertyName("isPassFree")]
+        [JsonPropertyName("is_pass_free")]
+        [JsonRequired]
         [Required]
         public bool IsPassFree { get; set; }
 
-        [BsonElement("stairId")]
-        [JsonPropertyName("stairId")]
-        [BsonIgnoreIfNull]
+        [StringLength(24)]
+        [JsonPropertyName("stair_id")]
         public string? StairId { get; set; }
 
-        [BsonElement("room")]
         [JsonPropertyName("room")]
-        [BsonIgnoreIfNull]
         public Room? Room { get; set; }
     }
 }

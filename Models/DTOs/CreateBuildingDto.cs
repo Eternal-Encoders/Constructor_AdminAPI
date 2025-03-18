@@ -1,42 +1,60 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Constructor_API.Models.Entities;
+using System.ComponentModel.DataAnnotations;
+using Constructor_API.Helpers.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Constructor_API.Models.DTOs
 {
+    [MinMaxFloorValidation]
     public class CreateBuildingDto
     {
+        [JsonPropertyName("project_id")]
+        [ObjectId]
+        [Required]
+        public string? ProjectId { get; set; }
+
         [JsonPropertyName("name")]
         [JsonRequired]
-        public string Name { get; set; }
+        [Required]
+        public string? Name { get; set; }
 
-        [JsonPropertyName("displayableName")]
+        [JsonPropertyName("displayable_name")]
         [JsonRequired]
-        public string DisplayableName { get; set; }
+        [Required]
+        public string? DisplayableName { get; set; }
 
-        [JsonPropertyName("minFloor")]
+        [JsonPropertyName("min_floor")]
         [JsonRequired]
-        public int MinFloor { get; set; }
+        [Required]
+        public int? MinFloor { get; set; }
 
-        [JsonPropertyName("maxFloor")]
+        [JsonPropertyName("max_floor")]
         [JsonRequired]
-        public int MaxFloor { get; set; }
+        [Required]
+        public int? MaxFloor { get; set; }
+
+        //[JsonPropertyName("floors")]
+        //public string[]? FloorIds { get; set; }
 
         [JsonPropertyName("url")]
         [JsonRequired]
-        public string Url { get; set; }
+        [Required]
+        public string? Url { get; set; }
 
         [JsonPropertyName("latitude")]
         [JsonRequired]
-        public double Latitude { get; set; }
+        [Required]
+        public double? Latitude { get; set; }
 
         [JsonPropertyName("longitude")]
         [JsonRequired]
-        public double Longitude { get; set; }
+        [Required]
+        public double? Longitude { get; set; }
 
-        //[JsonPropertyName("icon")]
-        //public CreateIconDto? Icon { get; set; }
+        [JsonPropertyName("icon")]
+        public CreateImageDto? Icon { get; set; }
+
         [JsonPropertyName("gps")]
         public GPS? GPS { get; set; }
     }

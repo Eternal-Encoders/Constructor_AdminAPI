@@ -1,4 +1,5 @@
 ﻿using Constructor_API.Core.Repositories;
+using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.Entities;
 using System.Threading;
 
@@ -7,41 +8,53 @@ namespace Constructor_API.Application.Services
     public class StairService
     {
         IStairRepository _stairRepository;
-        public StairService(IStairRepository stairRepository)
+        IGraphPointRepository _graphPointRepository;
+        public StairService(IStairRepository stairRepository, IGraphPointRepository graphPointRepository)
         {
             _stairRepository = stairRepository;
+            _graphPointRepository = graphPointRepository;
         }
 
-        public async Task<Result.Result<Stair>> GetStairById(string id, CancellationToken cancellationToken)
+        //public async Task InsertStair(Stair stair, CancellationToken cancellationToken)
+        //{
+        //    if (_stairRepository.FirstAsync(s => s.Id == stair.Id, cancellationToken) != null)
+        //        throw new AlreadyExistsException($"Stair {stair.Id} already exists");
+
+        //    await _stairRepository.AddAsync(stair, cancellationToken);
+
+        //    //return stair;
+        //}
+
+        public async Task<Stair> GetStairById(string id, CancellationToken cancellationToken)
         {
             var stair = await _stairRepository.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
-            if (stair == null) return Result.Result<Stair>.Error(new Result.Error("Stair not found", 404));
+            if (stair == null) throw new NotFoundException("Stair not found");
 
-            return Result.Result<Stair>.Success(stair);
+            return stair;
         }
 
-        public async Task<Result.Result<Stair>> GetStairByGraphPoint(string graphPointId, CancellationToken cancellationToken)
+        public async Task<Stair> GetStairByGraphPoint(string graphPointId, CancellationToken cancellationToken)
         {
             var stair = await _stairRepository.FirstOrDefaultAsync(s => s.Links == null ? false : s.Links.Contains(graphPointId),
                 cancellationToken);
-            if (stair == null) return Result.Result<Stair>.Error(new Result.Error("Stair not found", 404));
+            if (stair == null) throw new NotFoundException("Stair not found");
 
-            return Result.Result<Stair>.Success(stair);
+            return stair;
         }
 
-        public async Task<Result.Result<IReadOnlyList<Stair>>> GetStairsByBuilding(string buildingName, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Stair>> GetStairsByBuilding(string buildingId, CancellationToken cancellationToken)
         {
-            var stairs = await _stairRepository.ListAsync(s => s.Building == buildingName, cancellationToken);
-            if (stairs == null) return Result.Result<IReadOnlyList<Stair>>.Error(new Result.Error("Stairs not found", 404));
+            var stairs = await _stairRepository.ListAsync(s => s.BuildingId == buildingId, cancellationToken);
+            if (stairs == null) throw new NotFoundException("Stairs not found");
 
-            return Result.Result<IReadOnlyList<Stair>>.Success(stairs);
+            return stairs;
         }
 
-        public async Task<Result.Result<IReadOnlyList<Stair>>> GetAllStairs(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Stair>> GetAllStairs(CancellationToken cancellationToken)
         {
             var stairs = await _stairRepository.ListAsync(cancellationToken);
 
-            return Result.Result<IReadOnlyList<Stair>>.Success(stairs);
+            return stairs;
         }
     }
 }

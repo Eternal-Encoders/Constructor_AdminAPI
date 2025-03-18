@@ -3,7 +3,7 @@ using Constructor_API.Models.Entities;
 
 namespace Constructor_API.Core.Repositories
 {
-    public interface INavigationGroupRepository : IRepository<NavigationGroup>
+    public interface IProjectRepository : IRepository<Project>
     {
     }
 }

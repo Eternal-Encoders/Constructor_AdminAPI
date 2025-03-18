@@ -2,7 +2,7 @@
 
 namespace Constructor_API.Infractructure.Repositories
 {
-    public class IconMongoRepository : MongoRepository<Icon>
+    public class IconMongoRepository : MongoRepository<Image>
     {
         public IconMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
