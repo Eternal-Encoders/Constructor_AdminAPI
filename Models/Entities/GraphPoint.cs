@@ -1,5 +1,6 @@
 ﻿using Constructor_API.Core.Shared;
 using Constructor_API.Helpers.Attributes;
+using Constructor_API.Models.InnerObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -10,80 +11,68 @@ namespace Constructor_API.Models.Entities
     [PointType]
     public class GraphPoint : IAggregateRoot
     {
-        private static readonly Dictionary<string, string> pointTypes = new Dictionary<string, string>()
-        {
-            ["corridor"] = "corridor",
-            //["auditorium"] = "auditorium",
-            //["dinning"] = "dinning",
-            ["exit"] = "exit",
-            ["fire-exit"] = "fire-exit",
-            ["stair"] = "stair",
-            ["elevator"] = "elevator",
-            ["escalator"] = "escalator",
-            ["toilet-m"] = "toilet-m",
-            ["toilet-w"] = "toilet-w",
-            ["cafe"] = "cafe",
-            //["vending"] = "vending",
-            //["coworking"] = "coworking",
-            //["atm"] = "atm",
-            ["wardrobe"] = "wardrobe",
-            //["print"] = "print",
-            //["deanery"] = "deanery",
-            //["students"] = "students",
-            ["other"] = "other"
-        };
+        //private static readonly Dictionary<string, string> pointTypes = new Dictionary<string, string>()
+        //{
+        //    ["corridor"] = "corridor",
+        //    ["exit"] = "exit",
+        //    ["fire-exit"] = "fire-exit",
+        //    ["stair"] = "stair",
+        //    ["elevator"] = "elevator",
+        //    ["escalator"] = "escalator",
+        //    ["toilet-m"] = "toilet-m",
+        //    ["toilet-w"] = "toilet-w",
+        //    ["cafe"] = "cafe",
+        //    ["dinning"] = "dinning",
+        //    ["restaurant"] = "restaurant",
+        //    ["wardrobe"] = "wardrobe",
+        //    ["other"] = "other"
+        //};
 
         [BsonId]
         [BsonElement("_id")]
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        [Required]
-        [StringLength(24)]
+        [ObjectId]
         public string Id { get; set; }
 
         [BsonElement("x")]
         [JsonPropertyName("x")]
         [BsonRequired]
-        [Required]
         public double X { get; set; }
 
         [BsonElement("y")]
         [JsonPropertyName("y")]
         [BsonRequired]
-        [Required]
         public double Y { get; set; }
 
         [BsonElement("links")]
         [JsonPropertyName("links")]
         [BsonRequired]
-        [Required]
         public string[] Links { get; set; }
 
-        private string[] types;
+        //private string[]? types;
         [BsonElement("types")]
         [JsonPropertyName("types")]
         [BsonRequired]
-        [Required]
-        public string[] Types {
-            get { return types; }
-            set 
-            {
-                types = value;
-                types = types.Where(x => pointTypes.ContainsKey(x)).ToArray();
-            }
-        } 
+        public string[] Types { get; set; }
+        //{
+        //    get { return types; }
+        //    set 
+        //    {
+        //        types = value;
+        //        types = types.Where(x => pointTypes.ContainsKey(x)).ToArray();
+        //    }
+        //} 
 
         [BsonElement("names")]
         [JsonPropertyName("names")]
         [BsonRequired]
-        [Required]
         public string[] Names { get; set; }
 
         [BsonElement("floor")]
         [JsonPropertyName("floor")]
-        [StringLength(24)]
+        [ObjectId]
         [BsonRequired]
-        [Required]
         public string FloorId { get; set; }
 
         //[BsonElement("building")]
@@ -99,27 +88,40 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("description")]
         [JsonPropertyName("description")]
-        [BsonRequired]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [BsonElement("info")]
         [JsonPropertyName("info")]
-        [BsonRequired]
-        public string Info { get; set; }
+        public string? Info { get; set; }
 
-        [BsonElement("isPassFree")]
-        [JsonPropertyName("isPassFree")]
-        [Required]
+        [BsonElement("is_pass_free")]
+        [JsonPropertyName("is_pass_free")]
+        [BsonRequired]
         public bool IsPassFree { get; set; }
 
-        [BsonElement("stairId")]
-        [JsonPropertyName("stairId")]
+        [BsonElement("connection_id")]
+        [JsonPropertyName("connection_id")]
         [BsonIgnoreIfNull]
-        public string? StairId { get; set; }
+        public string? ConnectionId { get; set; }
 
-        [BsonElement("room")]
-        [JsonPropertyName("room")]
-        [BsonIgnoreIfNull]
-        public Room? Room { get; set; }
+        //[BsonElement("room_id")]
+        //[JsonPropertyName("room_id")]
+        //[ObjectId]
+        //public string? RoomId { get; set; }
+
+        [BsonElement("created_at")]
+        [JsonPropertyName("created_at")]
+        [BsonRequired]
+        public DateTime CreatedAt { get; set; }
+
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRequired]
+        public DateTime UpdatedAt { get; set; }
+
+        [BsonElement("updated_by")]
+        [JsonPropertyName("updated_by")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? UpdatedBy { get; set; }
     }
 }

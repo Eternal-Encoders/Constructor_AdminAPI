@@ -1,6 +1,6 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
-using Constructor_API.Models.DTOs;
+using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;

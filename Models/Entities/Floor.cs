@@ -4,6 +4,8 @@ using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System.ComponentModel.DataAnnotations;
+using Constructor_API.Models.InnerObjects;
+using Constructor_API.Helpers.Attributes;
 
 namespace Constructor_API.Models.Entities
 {
@@ -17,94 +19,67 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("floor_number")]
         [JsonPropertyName("floor_number")]
+        [BsonRequired]
         public int FloorNumber { get; set; }
+
+        [BsonElement("floor_name")]
+        [JsonPropertyName("floor_name")]
+        public int FloorName { get; set; }
 
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRequired]
         public string BuildingId { get; set; }
 
-        [BsonElement("building")]
-        [JsonPropertyName("building")]
+        [BsonElement("image_id")]
+        [JsonPropertyName("image_id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Building { get; set; }
+        public string ImageId { get; set; }
 
         [BsonElement("width")]
         [JsonPropertyName("width")]
+        [BsonRequired]
         public int Width { get; set; }
 
         [BsonElement("height")]
         [JsonPropertyName("height")]
+        [BsonRequired]
         public int Height { get; set; }
 
-        [BsonElement("service")]
-        [JsonPropertyName("service")]
-        public Service[] Service { get; set; }
+        [BsonElement("services")]
+        [JsonPropertyName("services")]
+        [BsonRequired]
+        public Service[] Services { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]
+        [BsonRequired]
         public Room[] Rooms { get; set; }
 
         [BsonElement("graph")]
         [JsonPropertyName("graph")]
+        [BsonRequired]
         public string[] GraphPoints { get; set; }
 
         [BsonElement("forces")]
         [JsonPropertyName("forces")]
         [BsonIgnoreIfNull]
         public Forces[]? Forces { get; set; }
-    }
 
-    public class Service
-    {
-        [BsonElement("x")]
-        [JsonPropertyName("x")]
-        [Required]
-        public double X { get; set; }
+        [BsonElement("created_at")]
+        [JsonPropertyName("created_at")]
+        [BsonRequired]
+        public DateTime CreatedAt { get; set; }
 
-        [BsonElement("y")]
-        [JsonPropertyName("y")]
-        [Required]
-        public double Y { get; set; }
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRequired]
+        public DateTime UpdatedAt { get; set; }
 
-        [BsonElement("data")]
-        [JsonPropertyName("data")]
-        public string? Data { get; set; }
-
-        [BsonElement("stroke")]
-        [JsonPropertyName("stroke")]
-        [BsonIgnoreIfNull]
-        public string? Stroke { get; set; }
-
-        [BsonElement("fill")]
-        [JsonPropertyName("fill")]
-        [BsonIgnoreIfNull]
-        public string? Fill { get; set; }
-    }
-
-    public class Forces
-    {
-        [BsonElement("point")]
-        [JsonPropertyName("point")]
-        [Required]
-        public Coordinates Point {  get; set; }
-
-        [BsonElement("force")]
-        [JsonPropertyName("force")]
-        [Required]
-        public Coordinates Force { get; set; }
-    }
-
-    public class Coordinates
-    {
-        [BsonElement("x")]
-        [JsonPropertyName("x")]
-        [Required]
-        public double X { get; set; }
-
-        [BsonElement("y")]
-        [JsonPropertyName("y")]
-        [Required]
-        public double Y { get; set; }
+        [BsonElement("updated_by")]
+        [JsonPropertyName("updated_by")]
+        [ObjectId]
+        public string? UpdatedBy { get; set; }
     }
 }

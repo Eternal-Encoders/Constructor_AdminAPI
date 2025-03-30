@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using Constructor_API.Core.Repositories;
 using Constructor_API.Helpers.Exceptions;
-using Constructor_API.Models.DTOs;
+using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
 using MongoDB.Bson;
 
@@ -13,29 +14,36 @@ namespace Constructor_API.Application.Services
         IProjectRepository _projectRepository;
         IFloorRepository _floorRepository;
         IGraphPointRepository _graphPointRepository;
+        IFloorConnectionRepository _floorConnectionRepository;
         IMapper _mapper;
 
         public BuildingService(IBuildingRepository buildingRepository, IMapper mapper,
             IProjectRepository projectRepository, IFloorRepository floorRepository,
-            IGraphPointRepository graphPointRepository)
+            IGraphPointRepository graphPointRepository, IFloorConnectionRepository floorConnectionRepository)
         {
             _buildingRepository = buildingRepository;
             _mapper = mapper;
             _projectRepository = projectRepository;
             _floorRepository = floorRepository;
             _graphPointRepository = graphPointRepository;
+            _floorConnectionRepository = floorConnectionRepository;
         }
 
         public async Task InsertBuilding(CreateBuildingDto buildingDto, CancellationToken cancellationToken)
         {
             var building = _mapper.Map<Building>(buildingDto);
             building.Id = ObjectId.GenerateNewId().ToString();
+            building.FloorIds = [];
 
             var project = await _projectRepository.FirstAsync(g => g.Id == buildingDto.ProjectId, cancellationToken);
-            if (project == null) throw new NotFoundException("Project not found");
+            if (project == null) throw new NotFoundException("Project is not found");
             else 
             {
-                project.BuildingIds.Append(building.Id);
+                project.UpdatedAt = DateTime.UtcNow;
+                if (project.BuildingIds != null)
+                    project.BuildingIds.Append(building.Id);
+                else
+                    project.BuildingIds = [building.Id];
                 await _projectRepository.UpdateAsync(g => g.Id == buildingDto.ProjectId, project, cancellationToken);
             }
 
@@ -46,7 +54,7 @@ namespace Constructor_API.Application.Services
         public async Task<Building> GetBuildingById(string id, CancellationToken cancellationToken)
         {
             var building = await _buildingRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            if (building == null) throw new NotFoundException("Building not found");
+            if (building == null) throw new NotFoundException("Building is not found");
 
             return building;
         }
@@ -78,7 +86,7 @@ namespace Constructor_API.Application.Services
         {
             var res = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
                 f.FloorNumber == number, cancellationToken);
-            if (res == null) throw new NotFoundException("Floor not found");
+            if (res == null) throw new NotFoundException("Floor is not found");
             return res;
         }
 
@@ -87,6 +95,7 @@ namespace Constructor_API.Application.Services
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
                 f.FloorNumber == number, cancellationToken);
+            if (floor == null) throw new NotFoundException($"Floor is not found");
 
             var res = _mapper.Map<GetFloorDto>(floor);
             res.GraphPoints = (await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken))
@@ -99,6 +108,34 @@ namespace Constructor_API.Application.Services
         {
             var buildings = await _buildingRepository.ListAsync(cancellationToken);
             return buildings;
+        }
+
+        public async Task DeleteBuilding(string buildingId, CancellationToken cancellationToken)
+        {
+            var building = await _buildingRepository.FirstOrDefaultAsync(b => b.Id == buildingId, cancellationToken)
+                ?? throw new NotFoundException($"Building is not found");
+            var project = await _projectRepository.FirstOrDefaultAsync(p => p.Id == building.ProjectId, cancellationToken)
+                ?? throw new NotFoundException($"Project is not found");
+
+            project.BuildingIds = project.BuildingIds.Where(b => b != buildingId).ToArray();
+            project.UpdatedAt = DateTime.UtcNow;
+            await _projectRepository.UpdateAsync(p => p.Id == project.Id, project, cancellationToken);
+
+            await _floorConnectionRepository.RemoveRangeAsync(c => c.BuildingId == buildingId, cancellationToken);
+
+            if (building.FloorIds != null)
+            {
+                foreach (var floorId in building.FloorIds)
+                {
+                    var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == floorId, cancellationToken)
+                        ?? throw new NotFoundException("Floor is not found");
+
+                    await _graphPointRepository.RemoveRangeAsync(g => floor.GraphPoints.Contains(g.Id), cancellationToken);
+                }
+            }
+            await _floorRepository.RemoveRangeAsync(f => f.BuildingId == buildingId, cancellationToken);
+            await _buildingRepository.RemoveAsync(b => b.Id == buildingId, cancellationToken);
+            await _buildingRepository.SaveChanges();
         }
     }
 }

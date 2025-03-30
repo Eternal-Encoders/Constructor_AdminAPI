@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Constructor_API": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:60017;http://localhost:60018"
+    }
+  }
+}

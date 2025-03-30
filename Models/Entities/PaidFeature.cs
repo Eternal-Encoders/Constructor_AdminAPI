@@ -1,11 +1,10 @@
-﻿using Constructor_API.Core.Shared;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
 {
-    public class Image : IAggregateRoot
+    public class PaidFeature
     {
         [BsonId]
         [BsonElement("_id")]
@@ -13,22 +12,23 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("name")]
-        [JsonPropertyName("name")]
+        [BsonElement("description")]
+        [JsonPropertyName("description")]
         [BsonRequired]
-        public string Name { get; set; }
+        public string Description { get; set; }
 
-        [BsonElement("url")]
-        [JsonPropertyName("url")]
-        public string? Url { get; set; }
-
-        [BsonElement("filesize")]
-        [JsonPropertyName("filesize")]
-        public string? Filesize { get; set; }
+        [BsonElement("short_description")]
+        [JsonPropertyName("short_description")]
+        public string? ShortDescription { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
         [BsonRequired]
         public DateTime CreatedAt { get; set; }
+
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRequired]
+        public DateTime UpdatedAt { get; set; }
     }
 }

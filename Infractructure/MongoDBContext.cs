@@ -1,22 +1,23 @@
 ﻿using Constructor_API.Core.Shared;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
 namespace Constructor_API.Infractructure
 {
-    public class MongoDBContext : IUnitOfWork
+    public class MongoDBContext
     {
-        private IMongoDatabase Database { get; set; }
-        public IClientSessionHandle Session { get; set; }
-        public MongoClient MongoClient { get; set; }
-        private readonly List<Func<Task>> _commands;
+        private IMongoDatabase _database;
         private readonly IConfiguration _configuration;
+        public IClientSessionHandle _session;
+        public MongoClient MongoClient { get; set; }
+        private readonly List<Func<Task>> _commands = new List<Func<Task>>();
 
         public MongoDBContext(IConfiguration configuration)
         {
             _configuration = configuration;
-            _commands = new List<Func<Task>>();
             MongoClient = new MongoClient(_configuration["ConnectionStrings:Server"]);
-            Database = MongoClient.GetDatabase(_configuration["ConnectionStrings:DatabaseName"]);
+            if (MongoClient != null ) 
+                _database = MongoClient.GetDatabase(_configuration["ConnectionStrings:DatabaseName"]);
         }
 
         public void AddCommand(Func<Task> func)
@@ -24,27 +25,46 @@ namespace Constructor_API.Infractructure
             _commands.Add(func);
         }
 
-        public async Task<bool> SaveChanges()
+        public async Task<int> SaveChanges()
         {
-            using (Session = await MongoClient.StartSessionAsync())
+            using (_session = await MongoClient.StartSessionAsync())
             {
-                Session.StartTransaction();
-                var commandTasks = _commands.Select(c => c());
-                await Task.WhenAll(commandTasks);
-                await Session.CommitTransactionAsync();
-            }
+                //_session.StartTransaction();
+                //var commandTasks = _commands.Select(c => c());
+                //await Task.WhenAll(commandTasks);
+                //await _session.CommitTransactionAsync();
+                //_commands.Clear();
+                //return _commands.Count;
 
-            return (_commands.Count > 0);
+                try
+                {
+                    _session.StartTransaction();
+                    var commandTasks = _commands.Select(c => c());
+                    await Task.WhenAll(commandTasks);
+                    await _session.CommitTransactionAsync();
+                    return _commands.Count;
+                }
+                //catch (Exception ex)
+                //{
+                //    await _session.AbortTransactionAsync();
+                //    throw ex;
+                //    return 0;
+                //}
+                finally
+                {
+                    _commands.Clear();
+                }
+            }
         }
 
         public IMongoCollection<T> GetCollection<T>(string name)
         {
-            return Database.GetCollection<T>(name);
+            return _database.GetCollection<T>(name);
         }
 
         public void Dispose()
         {
-            Session?.Dispose();
+            _session?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

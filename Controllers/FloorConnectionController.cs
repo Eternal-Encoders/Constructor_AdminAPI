@@ -6,15 +6,15 @@ using MongoDB.Bson;
 
 namespace Constructor_API.Controllers
 {
-    [Route("stair")]
+    [Route("floorConnection")]
     [ApiController]
-    public class StairController : ControllerBase
+    public class FloorConnectionController : ControllerBase
     {
-        private readonly StairService _stairService;
+        private readonly FloorConnectionService _floorConnectionService;
 
-        public StairController(StairService stairService)
+        public FloorConnectionController(FloorConnectionService floorConnectionService)
         {
-            _stairService = stairService;
+            _floorConnectionService = floorConnectionService;
         }
 
         //[HttpGet]
@@ -41,7 +41,7 @@ namespace Constructor_API.Controllers
                 if (!ObjectId.TryParse(id, out _))
                     return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-                return Ok(await _stairService.GetStairById(id, CancellationToken.None));
+                return Ok(await _floorConnectionService.GetConnectionById(id, CancellationToken.None));
             }
             
             else return BadRequest("Wrong input");
@@ -78,7 +78,7 @@ namespace Constructor_API.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllStairs()
         { 
-            var res = await _stairService.GetAllStairs(CancellationToken.None);
+            var res = await _floorConnectionService.GetAllConnections(CancellationToken.None);
 
             return Ok(res);
         }

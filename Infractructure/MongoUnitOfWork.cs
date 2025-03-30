@@ -11,7 +11,7 @@ namespace Constructor_API.Infractructure
             _context = context;
         }
 
-        public async Task<bool> SaveChanges()
+        public async Task<int> SaveChanges()
         {
             var changeAmount = await _context.SaveChanges();
             return changeAmount;

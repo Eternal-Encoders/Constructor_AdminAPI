@@ -2,6 +2,6 @@
 {
     public interface IUnitOfWork : IDisposable
     {
-        Task<bool> SaveChanges();
+        Task<int> SaveChanges();
     }
 }

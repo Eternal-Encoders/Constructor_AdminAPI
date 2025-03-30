@@ -1,4 +1,6 @@
 ﻿using Constructor_API.Core.Shared;
+using Constructor_API.Helpers.Attributes;
+using Constructor_API.Models.InnerObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -6,93 +8,76 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
 {
-    public class Room 
+    public class Room
     {
-        //[BsonId]
-        //[BsonElement("_id")]
-        //[JsonPropertyName("id")]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        //public string Id { get; set; }
-        [BsonElement("x")]
+        [BsonId]
+        [BsonElement("_id")]
+        [JsonPropertyName("id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
         [JsonPropertyName("x")]
-        [JsonRequired]
-        [Required]
+        [BsonElement("x")]
+        [BsonRequired]
         public double X { get; set; }
 
-        [BsonElement("y")]
         [JsonPropertyName("y")]
-        [JsonRequired]
-        [Required]
+        [BsonElement("y")]
+        [BsonRequired]
         public double Y { get; set; }
 
-        [BsonElement("width")]
         [JsonPropertyName("width")]
-        [JsonRequired]
-        [Required]
+        [BsonElement("width")]
+        [BsonRequired]
         public double Width { get; set; }
 
-        [BsonElement("height")]
         [JsonPropertyName("height")]
-        [JsonRequired]
-        [Required]
+        [BsonElement("height")]
+        [BsonRequired]
         public double Height { get; set; }
 
-        [BsonElement("fill")]
         [JsonPropertyName("fill")]
-        [Required]
-        public string? Fill { get; set; }
+        [BsonElement("fill")]
+        [BsonRequired]
+        public string Fill { get; set; }
 
-        [BsonElement("stroke")]
         [JsonPropertyName("stroke")]
-        [Required]
-        public string? Stroke { get; set; }
+        [BsonElement("stroke")]
+        [BsonRequired]
+        public string Stroke { get; set; }
 
-        //[BsonElement("pointId")]
-        //[JsonPropertyName("pointId")]
-        //public string PointId { get; set; }
-        [BsonElement("children")]
+        [JsonPropertyName("floor_id")]
+        [BsonElement("floor_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
+        [BsonRequired]
+        public string FloorId { get; set; }
+
         [JsonPropertyName("children")]
+        [BsonElement("children")]
         [BsonIgnoreIfNull]
-        [Required]
         public RoomChild[]? Children { get; set; }
 
-        [BsonElement("doors")]
         [JsonPropertyName("doors")]
+        [BsonElement("doors")]
+        [BsonRequired]
+        public Door[] Doors { get; set; }
+
+        [BsonElement("created_at")]
+        [JsonPropertyName("created_at")]
+        [BsonRequired]
+        public DateTime CreatedAt { get; set; }
+
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRequired]
+        public DateTime UpdatedAt { get; set; }
+
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRepresentation(BsonType.ObjectId)]
         [BsonIgnoreIfNull]
-        [Required]
-        public Door[]? Doors { get; set; }
-    }
-
-    public class RoomChild
-    {
-        private string type;
-        [BsonElement("type")]
-        [JsonPropertyName("type")]
-        [JsonRequired]
-        public string Type 
-        {
-            //get; set;
-            get { return type; }
-            set
-            {
-                if (value == "Icon" || value == "Text")
-                    type = value;
-            }
-        }
-
-        [BsonElement("identifier")]
-        [JsonPropertyName("identifier")]
-        [JsonRequired]
-        public string Identifier { get; set; }
-
-        [BsonElement("x")]
-        [JsonPropertyName("x")]
-        [JsonRequired]
-        public double X { get; set; }
-
-        [BsonElement("y")]
-        [JsonPropertyName("y")]
-        [JsonRequired]
-        public double Y { get; set; }
+        [ObjectId]
+        public string? UpdatedBy { get; set; }
     }
 }

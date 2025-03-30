@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.DTOs
+namespace Constructor_API.Models.DTOs.Create
 {
     public class CreateImageDto
     {

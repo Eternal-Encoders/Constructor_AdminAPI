@@ -1,5 +1,6 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
+using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
@@ -25,7 +26,7 @@ namespace Constructor_API.Controllers
         /// <param name="graphPoint">JSON объект, представляющий информацию о точке графа</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> PostGraphPoint([FromBody] GraphPoint? graphPoint)
+        public async Task<IActionResult> PostGraphPoint([FromBody] CreateGraphPointDto? graphPoint)
         {
             if (graphPoint == null) return BadRequest("Wrong input");
 
@@ -38,14 +39,14 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <param name="graphPoints">Массив JSON объектов, представляющих информацию о точках графа</param>
         /// <returns></returns>
-        [HttpPost("many")]
-        public async Task<IActionResult> PostGraphPoints([FromBody] GraphPoint[]? graphPoints)
-        {
-            if (graphPoints == null || graphPoints.Count() == 0) return BadRequest("Wrong input");
+        //[HttpPost("many")]
+        //public async Task<IActionResult> PostGraphPoints([FromBody] GraphPoint[]? graphPoints)
+        //{
+        //    if (graphPoints == null || graphPoints.Count() == 0) return BadRequest("Wrong input");
 
-            await _graphPointService.InsertGraphPoints(graphPoints, CancellationToken.None);
-            return Created();
-        }
+        //    await _graphPointService.InsertGraphPoints(graphPoints, CancellationToken.None);
+        //    return Created();
+        //}
 
         /// <summary>
         /// Возвращает точку графа по query-параметру
@@ -73,7 +74,7 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var res = await _graphPointService.GetStairByGraphPoint(id, CancellationToken.None);
+            var res = await _graphPointService.GetFloorConnectionByGraphPoint(id, CancellationToken.None);
             return Ok(res);
         }
 

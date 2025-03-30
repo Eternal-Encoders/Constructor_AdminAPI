@@ -1,6 +1,6 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
-using Constructor_API.Models.DTOs;
+using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +15,6 @@ namespace Constructor_API.Controllers
     {
         private readonly BuildingService _buildingService;
         //private readonly NavigationGroupService _navigationGroupService;
-
-        //возможно в будущем реализую
-        //private static Dictionary<int, Func<StatusCodeResult>> replies = new Dictionary<int, Func<StatusCodeResult>>
-        //{
-        //    [404] = NotFound()
-        //};
 
         public BuildingController(BuildingService buildingService)
         {

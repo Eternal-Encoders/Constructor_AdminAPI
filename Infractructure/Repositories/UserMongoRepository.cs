@@ -3,9 +3,9 @@ using Constructor_API.Models.Entities;
 
 namespace Constructor_API.Infractructure.Repositories
 {
-    public sealed class StairMongoRepository : MongoRepository<Stair>, IStairRepository
+    public class UserMongoRepository : MongoRepository<User>, IUserRepository
     {
-        public StairMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
+        public UserMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
 
         }

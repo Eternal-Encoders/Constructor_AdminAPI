@@ -2,8 +2,10 @@
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
+using Constructor_API.Helpers.Attributes;
+using Constructor_API.Models.InnerObjects;
 
-namespace Constructor_API.Models.DTOs
+namespace Constructor_API.Models.DTOs.Read
 {
     public class GetFloorDto
     {
@@ -11,6 +13,7 @@ namespace Constructor_API.Models.DTOs
         [BsonElement("_id")]
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         public string? Id { get; set; }
 
         [BsonElement("floor_number")]
@@ -20,6 +23,7 @@ namespace Constructor_API.Models.DTOs
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         public string? BuildingId { get; set; }
 
         [BsonElement("building")]

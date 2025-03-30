@@ -11,11 +11,11 @@ namespace Constructor_API.Infractructure
     public class MongoRepository<TAggregateRoot>: Repository<TAggregateRoot> where TAggregateRoot : class, IAggregateRoot
     {
         private readonly MongoDBContext _dbContext;
-        private IMongoCollection<TAggregateRoot> DbSet;
+        protected readonly IMongoCollection<TAggregateRoot> DbCollection;
         public MongoRepository(MongoDBContext dbContext, bool isReadOnly)
         {
             _dbContext = dbContext;
-            DbSet = _dbContext.GetCollection<TAggregateRoot>(typeof(TAggregateRoot).Name);
+            DbCollection = _dbContext.GetCollection<TAggregateRoot>(typeof(TAggregateRoot).Name);
             ReadOnly = isReadOnly;
         }
 
@@ -23,7 +23,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.InsertOneAsync(aggregateRoot));
+                _dbContext.AddCommand(() => DbCollection.InsertOneAsync(aggregateRoot));
             }
         }
 
@@ -31,7 +31,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.InsertManyAsync(aggregateRoots));
+                _dbContext.AddCommand(() => DbCollection.InsertManyAsync(aggregateRoots));
             }
         }
 
@@ -39,7 +39,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.DeleteOneAsync(predicate));
+                _dbContext.AddCommand(() => DbCollection.DeleteOneAsync(predicate));
             }
         }
 
@@ -47,7 +47,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.DeleteManyAsync(predicate));
+                _dbContext.AddCommand(() => DbCollection.DeleteManyAsync(predicate));
             }
         }
 
@@ -55,62 +55,62 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbSet.ReplaceOneAsync(predicate, aggregateRoot));
+                _dbContext.AddCommand(() => DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
             }
         }
 
         public override async Task<TAggregateRoot> FirstAsync(CancellationToken cancellationToken)
         {
-            return (await DbSet.FindAsync(Builders<TAggregateRoot>.Filter.Empty)).First();
+            return (await DbCollection.FindAsync(Builders<TAggregateRoot>.Filter.Empty)).First();
         }
 
         public override async Task<TAggregateRoot> FirstAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
-            return (await DbSet.FindAsync(predicate)).First();
+            return (await DbCollection.FindAsync(predicate)).First();
         }
 
         public override async Task<TAggregateRoot?> FirstOrDefaultAsync(CancellationToken cancellationToken)
         {
-            var data = await DbSet.FindAsync(Builders<TAggregateRoot>.Filter.Empty);
+            var data = await DbCollection.FindAsync(Builders<TAggregateRoot>.Filter.Empty);
             return data.FirstOrDefault();
         }
 
         public override async Task<TAggregateRoot?> FirstOrDefaultAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
-            var data = await DbSet.FindAsync(predicate);
+            var data = await DbCollection.FindAsync(predicate);
             return data.FirstOrDefault();
         }
 
         public override async Task<IReadOnlyList<TAggregateRoot>> ListAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
-            var elements = await DbSet.FindAsync(predicate);
+            var elements = await DbCollection.FindAsync(predicate);
             return elements == null ? [] : elements.ToList();   
         }
 
         public override async Task<IReadOnlyList<TAggregateRoot>> ListAsync(CancellationToken cancellationToken)
         {
-            var elements = await DbSet.FindAsync(Builders<TAggregateRoot>.Filter.Empty);
+            var elements = await DbCollection.FindAsync(Builders<TAggregateRoot>.Filter.Empty);
             return elements == null ? [] : elements.ToList();
         }
 
         public override async Task<long> LongCountAsync(CancellationToken cancellationToken)
         {
-            return await DbSet.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty);
+            return await DbCollection.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty);
         }
 
         public override async Task<long> LongCountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
-            return await DbSet.CountDocumentsAsync(predicate);
+            return await DbCollection.CountDocumentsAsync(predicate);
         }
 
         public override async Task<int> CountAsync(CancellationToken cancellationToken)
         {
-            return Convert.ToInt32(await DbSet.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty));
+            return Convert.ToInt32(await DbCollection.CountDocumentsAsync(Builders<TAggregateRoot>.Filter.Empty));
         }
 
         public override async Task<int> CountAsync(Expression<Func<TAggregateRoot, bool>> predicate, CancellationToken cancellationToken)
         {
-            return Convert.ToInt32(await DbSet.CountDocumentsAsync(predicate));
+            return Convert.ToInt32(await DbCollection.CountDocumentsAsync(predicate));
         }
 
         public override async Task SaveChanges()

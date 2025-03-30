@@ -13,6 +13,8 @@ using static System.Net.Mime.MediaTypeNames;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
@@ -35,14 +37,18 @@ builder.Services.AddScoped<MongoDBContext>();
 builder.Services.AddScoped<IBuildingRepository, BuildingMongoRepository>();
 builder.Services.AddScoped<IFloorRepository, FloorMongoRepository>();
 builder.Services.AddScoped<IGraphPointRepository, GraphPointMongoRepository>();
-builder.Services.AddScoped<IStairRepository, StairMongoRepository>();
+builder.Services.AddScoped<IFloorConnectionRepository, FloorConnectionMongoRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectMongoRepository>();
+builder.Services.AddScoped<IPredefinedGraphPointTypeRepository, PredefinedGraphPointTypeMongoRepository>();
+builder.Services.AddScoped<IPredefinedCategoryRepository, PredefinedCategoryMongoRepository>();
+builder.Services.AddScoped<IUserRepository, UserMongoRepository>();
 
-builder.Services.AddScoped<StairService>();
+builder.Services.AddScoped<FloorConnectionService>();
 builder.Services.AddScoped<GraphPointService>();
 builder.Services.AddScoped<FloorService>();
 builder.Services.AddScoped<BuildingService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
@@ -51,7 +57,8 @@ app.UseExceptionHandler(builder =>
     builder.Run(async context =>
     {
         var err = context.Features.Get<IExceptionHandlerFeature>().Error;
-        context.Response.ContentType = Text.Plain;
+        context.Response.ContentType = "application/problem+json";
+        //err.
 
         if (err is ValidationException valException)
         {
@@ -90,6 +97,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

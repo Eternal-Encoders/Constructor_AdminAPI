@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.Entities
+namespace Constructor_API.Models.InnerObjects
 {
     public class Schedule
     {
@@ -37,19 +37,21 @@ namespace Constructor_API.Models.Entities
 
     public class Day
     {
-        [BsonElement("isDayOff")]
-        [JsonPropertyName("isDayOff")]
+        [BsonElement("is_day_off")]
+        [JsonPropertyName("is_day_off")]
         [BsonIgnoreIfNull]
         public bool? IsDayOff { get; set; }
 
         [BsonElement("from")]
         [JsonPropertyName("from")]
         [Required]
-        public string From { get; set; }
+        [BsonRequired]
+        public string? From { get; set; }
 
         [BsonElement("to")]
         [JsonPropertyName("to")]
         [Required]
-        public string To { get; set; }
+        [BsonRequired]
+        public string? To { get; set; }
 }
 }
