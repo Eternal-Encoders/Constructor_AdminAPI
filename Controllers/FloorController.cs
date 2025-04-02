@@ -2,6 +2,7 @@
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 
@@ -12,10 +13,12 @@ namespace Constructor_API.Controllers
     public class FloorController : ControllerBase
     {
         private readonly FloorService _floorService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public FloorController(FloorService floorService)
+        public FloorController(FloorService floorService, IAuthorizationService authorizationService)
         {
             _floorService = floorService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -24,9 +27,16 @@ namespace Constructor_API.Controllers
         /// <param name="floorDto">JSON объект, представляющий информацию об этаже</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostFloorFromBody([FromBody] CreateFloorDto? floorDto)
         {
             if (floorDto == null) return BadRequest("Wrong input");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, floorDto.BuildingId, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             await _floorService.InsertFloor(floorDto, CancellationToken.None);
 
@@ -38,9 +48,11 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetAllFloors()
         {
             var floors = await _floorService.GetAllFloors(CancellationToken.None);
+
             return Ok(floors);
         }
 
@@ -50,12 +62,19 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID этажа, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetFloorById(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var floor = await _floorService.GetFloorById(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             return Ok(floor);
         }
@@ -66,12 +85,19 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID этажа, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}/graphPoints")]
+        [Authorize]
         public async Task<IActionResult> GetGraphPointsByFloor(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var graphPoints = await _floorService.GetGraphPointsByFloor(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             return Ok(graphPoints);
         }
@@ -82,12 +108,19 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID этажа, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}/stairs")]
+        [Authorize]
         public async Task<IActionResult> GetStairsByFloor(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var stairs = await _floorService.GetStairsByFloor(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             return Ok(stairs);
         }

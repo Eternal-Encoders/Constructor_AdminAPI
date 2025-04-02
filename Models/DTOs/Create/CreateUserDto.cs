@@ -17,6 +17,7 @@ namespace Constructor_API.Models.DTOs.Create
 
         [JsonPropertyName("password")]
         [Required]
+        [MinLength(8)]
         public string? Password { get; set; }
     }
 }

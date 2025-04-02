@@ -1,19 +1,29 @@
+using Constructor_API.Application.Authorization.Handlers;
+using Constructor_API.Application.Authorization.Requirements;
 using Constructor_API.Application.Services;
 using Constructor_API.Core.Repositories;
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Infractructure;
 using Constructor_API.Infractructure.Repositories;
+using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+//Добавление файла конфигурации
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
@@ -29,6 +39,32 @@ builder.Services.AddSwaggerGen(opt =>
 {
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        //Description = "Please enter token in format \"bearer *token*\"",
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -42,6 +78,7 @@ builder.Services.AddScoped<IProjectRepository, ProjectMongoRepository>();
 builder.Services.AddScoped<IPredefinedGraphPointTypeRepository, PredefinedGraphPointTypeMongoRepository>();
 builder.Services.AddScoped<IPredefinedCategoryRepository, PredefinedCategoryMongoRepository>();
 builder.Services.AddScoped<IUserRepository, UserMongoRepository>();
+builder.Services.AddScoped<IProjectUserRepository, ProjectUserMongoRepository>();
 
 builder.Services.AddScoped<FloorConnectionService>();
 builder.Services.AddScoped<GraphPointService>();
@@ -49,6 +86,50 @@ builder.Services.AddScoped<FloorService>();
 builder.Services.AddScoped<BuildingService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<UserService>();
+
+
+builder.Services.AddScoped<IAuthorizationHandler, UserAuthorizationHandler>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+
+.AddJwtBearer(options =>
+{
+    //Только dev
+    options.RequireHttpsMetadata = false;
+    //options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Secret"])),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true, 
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Project", policy =>
+        policy.Requirements.Add(new TypeRequirement("Project")));
+
+    options.AddPolicy("Building", policy =>
+        policy.Requirements.Add(new TypeRequirement("Building")));
+
+    options.AddPolicy("Floor", policy =>
+        policy.Requirements.Add(new TypeRequirement("Floor")));
+
+    options.AddPolicy("GraphPoint", policy =>
+        policy.Requirements.Add(new TypeRequirement("GraphPoint")));
+
+    options.AddPolicy("FloorConnection", policy =>
+        policy.Requirements.Add(new TypeRequirement("FloorConnection")));
+});
 
 var app = builder.Build();
 

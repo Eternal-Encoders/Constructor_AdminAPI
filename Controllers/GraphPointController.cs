@@ -2,6 +2,7 @@
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System.Threading;
@@ -14,10 +15,12 @@ namespace Constructor_API.Controllers
     public class GraphPointController : ControllerBase
     {
         private readonly GraphPointService _graphPointService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public GraphPointController(GraphPointService graphPointService)
+        public GraphPointController(GraphPointService graphPointService, IAuthorizationService authorizationService)
         {
             _graphPointService = graphPointService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -26,9 +29,16 @@ namespace Constructor_API.Controllers
         /// <param name="graphPoint">JSON объект, представляющий информацию о точке графа</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostGraphPoint([FromBody] CreateGraphPointDto? graphPoint)
         {
             if (graphPoint == null) return BadRequest("Wrong input");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, graphPoint.FloorId, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             await _graphPointService.InsertGraphPoint(graphPoint, CancellationToken.None);
             return Created();
@@ -54,12 +64,20 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID точки графа, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetGraphPointById(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var res = await _graphPointService.GetGraphPointById(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "GraphPoint");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
             return Ok(res);
         }
 
@@ -69,12 +87,20 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID точки графа, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}/stair")]
+        [Authorize]
         public async Task<IActionResult> GetStairByGraphPoint(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var res = await _graphPointService.GetFloorConnectionByGraphPoint(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "GraphPoint");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
             return Ok(res);
         }
 
@@ -83,6 +109,7 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetAllGraphPoints()
         {
             var res = await _graphPointService.GetAllGraphPoints(CancellationToken.None);

@@ -2,6 +2,7 @@
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
@@ -14,11 +15,13 @@ namespace Constructor_API.Controllers
     public class BuildingController : ControllerBase
     {
         private readonly BuildingService _buildingService;
+        private readonly IAuthorizationService _authorizationService;
         //private readonly NavigationGroupService _navigationGroupService;
 
-        public BuildingController(BuildingService buildingService)
+        public BuildingController(BuildingService buildingService, IAuthorizationService authorizationService)
         {
             _buildingService = buildingService;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -26,9 +29,16 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostBuilding([FromBody] CreateBuildingDto? buildingDto)
         {
             if (buildingDto == null) return BadRequest("Wrong input");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, buildingDto.ProjectId, "Project");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
             return Created();
@@ -63,6 +73,7 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID здания, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetBuildingById(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
@@ -70,6 +81,12 @@ namespace Constructor_API.Controllers
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
             var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             return Ok(building);
         }
@@ -80,6 +97,7 @@ namespace Constructor_API.Controllers
         /// <param name="id">ID здания, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}/floors")]
+        [Authorize]
         public async Task<IActionResult> GetFloorsByBuilding(string? id)
         {
             if (id == null) return BadRequest("Wrong input");
@@ -87,6 +105,12 @@ namespace Constructor_API.Controllers
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
             var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             return Ok(floors);
         }
@@ -98,11 +122,18 @@ namespace Constructor_API.Controllers
         /// <param name="number">Номер этажа</param> 
         /// <returns></returns>
         [HttpGet("{id}/floor/{number}")]
+        [Authorize]
         public async Task<IActionResult> GetFloorInBuildingByNumber(string? id, int number)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest(
                 "Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
             var floor = await _buildingService.GetFloorInBuildingByNumber(id, number, CancellationToken.None);
 
@@ -114,6 +145,7 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetAllBuildings()
         {
             var buildings = await _buildingService.GetAllBuildings(CancellationToken.None);

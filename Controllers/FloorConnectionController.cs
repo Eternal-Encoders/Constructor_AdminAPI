@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 
@@ -11,10 +12,12 @@ namespace Constructor_API.Controllers
     public class FloorConnectionController : ControllerBase
     {
         private readonly FloorConnectionService _floorConnectionService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public FloorConnectionController(FloorConnectionService floorConnectionService)
+        public FloorConnectionController(FloorConnectionService floorConnectionService, IAuthorizationService authorizationService)
         {
             _floorConnectionService = floorConnectionService;
+            _authorizationService = authorizationService;
         }
 
         //[HttpGet]
@@ -29,22 +32,27 @@ namespace Constructor_API.Controllers
         //}
 
         /// <summary>
-        /// Возвращает лестницу по query-параметру
+        /// Возвращает лестницу по ID
         /// </summary>
         /// <param name="id">ID лестницы, 24 символа</param>
         /// <returns></returns>
-        [HttpGet("{stairId}")]
-        public async Task<IActionResult> GetStairById(string id)
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetConnectionById(string id)
         {
-            if (id != null)
-            {
-                if (!ObjectId.TryParse(id, out _))
-                    return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _))
+                return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-                return Ok(await _floorConnectionService.GetConnectionById(id, CancellationToken.None));
+            var fc = await _floorConnectionService.GetConnectionById(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorConnection");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
             }
-            
-            else return BadRequest("Wrong input");
+
+            return Ok(fc);
         }
 
         /// <summary>
@@ -76,7 +84,8 @@ namespace Constructor_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllStairs()
+        [Authorize]
+        public async Task<IActionResult> GetAllConnections()
         { 
             var res = await _floorConnectionService.GetAllConnections(CancellationToken.None);
 

@@ -21,6 +21,11 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string Name { get; set; }
 
+        [BsonElement("url")]
+        [JsonPropertyName("url")]
+        [BsonRequired]
+        public string Url { get; set; }
+
         [BsonElement("buildings")]
         [JsonPropertyName("buildings")]
         [BsonRequired]
@@ -29,7 +34,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("project_users")]
         [JsonPropertyName("project_users")]
         [BsonRequired]
-        public ProjectUser[] ProjectUsers { get; set; }
+        public string[] ProjectUserIds { get; set; }
 
         [JsonPropertyName("description")]
         [BsonElement("description")]

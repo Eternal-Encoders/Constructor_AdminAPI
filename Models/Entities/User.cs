@@ -2,6 +2,8 @@
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using Constructor_API.Core.Shared;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Constructor_API.Models.Entities
 {
@@ -26,11 +28,11 @@ namespace Constructor_API.Models.Entities
         [BsonElement("password_hash")]
         [JsonPropertyName("password_hash")]
         [BsonRequired]
-        public string Hash { get; set; }
+        public string PasswordHash { get; set; }
 
-        [BsonElement("projects")]
-        [JsonPropertyName("projects")]
-        public string[]? ProjectIds { get; set; }
+        [BsonElement("project_users")]
+        [JsonPropertyName("project_users")]
+        public string[] ProjectUserIds { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
