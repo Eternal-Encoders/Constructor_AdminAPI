@@ -41,7 +41,7 @@ namespace Constructor_API.Application.Services
             {
                 project.UpdatedAt = DateTime.UtcNow;
                 if (project.BuildingIds != null)
-                    project.BuildingIds.Append(building.Id);
+                    project.BuildingIds = [..project.BuildingIds.Append(building.Id)];
                 else
                     project.BuildingIds = [building.Id];
                 await _projectRepository.UpdateAsync(g => g.Id == buildingDto.ProjectId, project, cancellationToken);

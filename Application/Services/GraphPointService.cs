@@ -45,7 +45,8 @@ namespace Constructor_API.Application.Services
                 throw new NotFoundException($"Floor {graphPointDto.FloorId} is not found");
 
             //В массив id точек в этаже добавляется новая точка
-            floor.GraphPoints.Append(graphPointDto.Id);
+            floor.GraphPoints ??= [];
+            floor.GraphPoints = [..floor.GraphPoints.Append(graphPointDto.Id)];
             floor.UpdatedAt = DateTime.UtcNow;
             await _floorRepository.UpdateAsync(f => f.Id == graphPointDto.FloorId, floor, cancellationToken);
 
@@ -77,9 +78,9 @@ namespace Constructor_API.Application.Services
                             $"on floor {floor.FloorNumber}");
 
                     //Если соединение найдено и ссылка на него одна, то id точки добавляется в его массив Links
-                    connection.Links = connection.Links == null ? [] : connection.Links;
+                    connection.Links ??= [];
                     if (!connection.Links.Contains(graphPointDto.Id))
-                        connection.Links.Append(graphPointDto.Id);
+                        connection.Links = [..connection.Links.Append(graphPointDto.Id)];
                     connection.UpdatedAt = DateTime.UtcNow;
                     await _floorConnectionRepository.UpdateAsync(s => s.Id == connection.Id, connection, cancellationToken);
                 }

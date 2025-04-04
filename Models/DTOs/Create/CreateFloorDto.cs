@@ -45,7 +45,7 @@ namespace Constructor_API.Models.DTOs.Create
 
         [JsonPropertyName("rooms")]
         [Required]
-        public CreateRoomFromFloorDto[]? Rooms { get; set; }
+        public Room[]? Rooms { get; set; }
 
         //[JsonPropertyName("graph")]
         //public GraphPointFromFloorDto[]? GraphPoints { get; set; }

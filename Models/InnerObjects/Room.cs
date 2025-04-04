@@ -1,57 +1,69 @@
 ﻿using Constructor_API.Core.Shared;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.Entities
+namespace Constructor_API.Models.InnerObjects
 {
     public class Room
     {
         [BsonId]
+        [Required]
         [BsonElement("_id")]
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        //Такой же, как у точки
+        public string? Id { get; set; }
 
         [JsonPropertyName("x")]
         [BsonElement("x")]
         [BsonRequired]
-        public double X { get; set; }
+        [Required]
+        public double? X { get; set; }
 
         [JsonPropertyName("y")]
         [BsonElement("y")]
         [BsonRequired]
-        public double Y { get; set; }
+        [Required]
+        public double? Y { get; set; }
 
         [JsonPropertyName("width")]
         [BsonElement("width")]
         [BsonRequired]
-        public double Width { get; set; }
+        [Required]
+        public double? Width { get; set; }
 
         [JsonPropertyName("height")]
         [BsonElement("height")]
         [BsonRequired]
-        public double Height { get; set; }
+        [Required]
+        public double? Height { get; set; }
+
+        //[JsonPropertyName("points")]
+        //[BsonElement("points")]
+        //[BsonIgnoreIfNull]
+        //public Coordinates[]? Points { get; set; }
 
         [JsonPropertyName("fill")]
         [BsonElement("fill")]
         [BsonRequired]
-        public string Fill { get; set; }
+        [Required]
+        public string? Fill { get; set; }
 
         [JsonPropertyName("stroke")]
         [BsonElement("stroke")]
         [BsonRequired]
-        public string Stroke { get; set; }
+        [Required]
+        public string? Stroke { get; set; }
 
         [JsonPropertyName("floor_id")]
         [BsonElement("floor_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         [ObjectId]
         [BsonRequired]
-        public string FloorId { get; set; }
+        public string? FloorId { get; set; }
 
         [JsonPropertyName("children")]
         [BsonElement("children")]
@@ -61,17 +73,18 @@ namespace Constructor_API.Models.Entities
         [JsonPropertyName("doors")]
         [BsonElement("doors")]
         [BsonRequired]
-        public Door[] Doors { get; set; }
+        [Required]
+        public Door[]? Doors { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
         [BsonRequired]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [BsonElement("updated_at")]
         [JsonPropertyName("updated_at")]
         [BsonRequired]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         [BsonElement("updated_at")]
         [JsonPropertyName("updated_at")]

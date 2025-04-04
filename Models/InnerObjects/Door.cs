@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -6,6 +7,14 @@ namespace Constructor_API.Models.InnerObjects
 {
     public class Door
     {
+        [BsonId]
+        [Required]
+        [BsonElement("_id")]
+        [JsonPropertyName("id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        //Такой же, как у точки
+        public string Id { get; set; }
+
         [BsonElement("x")]
         [JsonPropertyName("x")]
         [Required]
