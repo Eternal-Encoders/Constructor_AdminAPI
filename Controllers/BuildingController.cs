@@ -1,83 +1,151 @@
-﻿using ConstructorAdminAPI.Application.Result;
-using ConstructorAdminAPI.Application.Services;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Application.Result;
+using Constructor_API.Application.Services;
+using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using System.Threading;
 
-namespace ConstructorAdminAPI.Controllers
+namespace Constructor_API.Controllers
 {
-    [Route("buildings")]
+    [Route("building")]
     [ApiController]
     public class BuildingController : ControllerBase
     {
         private readonly BuildingService _buildingService;
+        private readonly IAuthorizationService _authorizationService;
+        //private readonly NavigationGroupService _navigationGroupService;
 
-        public BuildingController(BuildingService buildingService)
+        public BuildingController(BuildingService buildingService, IAuthorizationService authorizationService)
         {
             _buildingService = buildingService;
+            _authorizationService = authorizationService;
         }
 
+        /// <summary>
+        /// Добавляет здание в БД
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostBuilding([FromBody] CreateBuildingDto? buildingDto)
         {
             if (buildingDto == null) return BadRequest("Wrong input");
 
-            var res = await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
-
-            if (res.IsSuccessfull) return Ok();
-            else
+            var auth = await _authorizationService.AuthorizeAsync(User, buildingDto.ProjectId, "Project");
+            if (!auth.Succeeded)
             {
-                return BadRequest(res.GetErrors()[0]._message);
+                return Forbid();
             }
+
+            await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
+            return Created();
         }
 
-        [HttpGet("building")]
-        public async Task<IActionResult> GetBuilding([FromQuery] string? id, [FromQuery] string? name)
+        //Пример заполнения:
+        /// <summary>
+        /// Возвращает здание по query-параметру
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа, учитывается первым</param>
+        /// <param name="name">Название здания</param>
+        /// <param name="navGroupId">ID группы навигации, которой принадлежит здание, 24 символа</param>
+        /// <returns>JSON-объект, представляющий здание</returns>
+        /// <remarks>
+        /// Примеры запроса:
+        /// 
+        ///     GET /BuildingController/building?id=000000000000000000000001
+        ///     
+        ///     GET /BuildingController/building?name=name
+        ///     
+        /// </remarks>
+        /// <response code="200">Возвращает найденный по параметрам объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="404">Если объекта нет в базе данных</response>
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        /// <summary>
+        /// Возвращает здание по ID
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetBuildingById(string? id)
         {
-            Result<Building> res;
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            if (id != null)
+            var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
             {
-                res = await _buildingService.GetBuildingById(id, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
-
-                return Ok(res.Value);
-            }
-            else if (name != null) 
-            {
-                res = await _buildingService.GetBuildingByName(name, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
-
-                return Ok(res.Value);
+                return Forbid();
             }
 
-            return BadRequest("Wrong input");
+            return Ok(building);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetBuildingById([FromQuery] string? id)
-        //{
-        //    if (id == null) return BadRequest("Wrong input");
+        /// <summary>
+        /// Возвращает все этажи в здании
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/floors")]
+        [Authorize]
+        public async Task<IActionResult> GetFloorsByBuilding(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
-        //    var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
-        //    if (!building.IsSuccessfull) return BadRequest(building.GetErrors()[0]._message);
+            var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
 
-        //    return Ok(building.Value);
-        //}
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetBuildingByName([FromQuery] string? name)
-        //{
-        //    if (name == null) return BadRequest("Wrong input");
+            return Ok(floors);
+        }
 
-        //    var building = await _buildingService.GetBuildingByName(name, CancellationToken.None);
-        //    if (!building.IsSuccessfull) return BadRequest(building.GetErrors()[0]._message);
+        /// <summary>
+        /// Возвращает этаж в здании по номеру этажа
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <param name="number">Номер этажа</param> 
+        /// <returns></returns>
+        [HttpGet("{id}/floor/{number}")]
+        [Authorize]
+        public async Task<IActionResult> GetFloorInBuildingByNumber(string? id, int number)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
 
-        //    return Ok(building.Value);
-        //}
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
+            var floor = await _buildingService.GetFloorInBuildingByNumber(id, number, CancellationToken.None);
+
+            return Ok(floor);
+        }
+
+        /// <summary>
+        /// Возвращает массив всех зданий
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetAllBuildings()
         {
             var buildings = await _buildingService.GetAllBuildings(CancellationToken.None);

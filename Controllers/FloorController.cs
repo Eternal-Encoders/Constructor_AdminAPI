@@ -1,97 +1,128 @@
-﻿using ConstructorAdminAPI.Application.Result;
-using ConstructorAdminAPI.Application.Services;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Application.Result;
+using Constructor_API.Application.Services;
+using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
-namespace ConstructorAdminAPI.Controllers
+namespace Constructor_API.Controllers
 {
-    [Route("floors")]
+    [Route("floor")]
     [ApiController]
     public class FloorController : ControllerBase
     {
         private readonly FloorService _floorService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public FloorController(FloorService floorService)
+        public FloorController(FloorService floorService, IAuthorizationService authorizationService)
         {
             _floorService = floorService;
+            _authorizationService = authorizationService;
         }
 
+        /// <summary>
+        /// Добавляет этаж, точки его графа и лестницы в БД
+        /// </summary>
+        /// <param name="floorDto">JSON объект, представляющий информацию об этаже</param>
+        /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostFloorFromBody([FromBody] CreateFloorDto? floorDto)
         {
             if (floorDto == null) return BadRequest("Wrong input");
 
-            var res = await _floorService.InsertFloor(floorDto, CancellationToken.None);
-
-            if (res.IsSuccessfull) return Ok();
-            else
+            var auth = await _authorizationService.AuthorizeAsync(User, floorDto.BuildingId, "Building");
+            if (!auth.Succeeded)
             {
-                return BadRequest(res.GetErrors()[0]._message);
+                return Forbid();
             }
+
+            await _floorService.InsertFloor(floorDto, CancellationToken.None);
+
+            return Created();
         }
 
+        /// <summary>
+        /// Возвращает массив всех этажей
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetAllFloors()
         {
             var floors = await _floorService.GetAllFloors(CancellationToken.None);
-            return Ok(floors.Value);
+
+            return Ok(floors);
         }
 
-        [HttpGet("floors")]
-        public async Task<IActionResult> GetFloorsByBuilding([FromQuery] string? building)
+        /// <summary>
+        /// Возвращает этаж по ID
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetFloorById(string? id)
         {
-            if (building == null) return BadRequest("Wrong input");
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var floors = await _floorService.GetFloorsByBuilding(building, CancellationToken.None);
-            if (!floors.IsSuccessfull) return BadRequest(floors.GetErrors()[0]._message);
+            var floor = await _floorService.GetFloorById(id, CancellationToken.None);
 
-            return Ok(floors.Value);
-        }
-
-        [HttpGet("floor")]
-        public async Task<IActionResult> GetFloor([FromQuery] string? id, [FromQuery] string? building, [FromQuery] int? number)
-        {
-            Result<Floor> res;
-
-            if (id != null)
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
             {
-                res = await _floorService.GetFloorById(id, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
-
-                return Ok(res.Value);
-            }
-            else if (building != null && number != null)
-            {
-                res = await _floorService.GetFloorByBuildingAndNumber(building, number.Value, CancellationToken.None);
-                if (!res.IsSuccessfull) return BadRequest(res.GetErrors()[0]._message);
-
-                return Ok(res.Value);
+                return Forbid();
             }
 
-            return BadRequest("Wrong input");
+            return Ok(floor);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetFloorByBuildingAndNumber([FromQuery] string? building, [FromQuery] int? number)
-        //{
-        //    if (building == null || number == null) return BadRequest("Wrong input");
+        /// <summary>
+        /// Возвращает точки графа на этаже
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/graphPoints")]
+        [Authorize]
+        public async Task<IActionResult> GetGraphPointsByFloor(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-        //    var floor = await _floorService.GetFloorByBuildingAndNumber(building, number.Value, CancellationToken.None);
-        //    if (!floor.IsSuccessfull) return BadRequest(floor.GetErrors()[0]._message);
+            var graphPoints = await _floorService.GetGraphPointsByFloor(id, CancellationToken.None);
 
-        //    return Ok(floor.Value);
-        //}
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetFloorById([FromQuery] string? id)
-        //{
-        //    if (id == null) return BadRequest("Wrong input");
+            return Ok(graphPoints);
+        }
 
-        //    var floor = await _floorService.GetFloorById(id, CancellationToken.None);
-        //    if (!floor.IsSuccessfull) return BadRequest(floor.GetErrors()[0]._message);
+        /// <summary>
+        /// Возвращает лестницы на этаже
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/stairs")]
+        [Authorize]
+        public async Task<IActionResult> GetStairsByFloor(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-        //    return Ok(floor.Value);
-        //}
+            var stairs = await _floorService.GetStairsByFloor(id, CancellationToken.None);
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            return Ok(stairs);
+        }
     }
 }

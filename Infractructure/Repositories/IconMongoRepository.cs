@@ -1,8 +1,8 @@
-﻿using ConstructorAdminAPI.Models.Entities;
+﻿using Constructor_API.Models.Entities;
 
-namespace ConstructorAdminAPI.Infractructure.Repositories
+namespace Constructor_API.Infractructure.Repositories
 {
-    public class IconMongoRepository : MongoRepository<Icon>
+    public class IconMongoRepository : MongoRepository<Image>
     {
         public IconMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {

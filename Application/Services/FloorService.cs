@@ -1,128 +1,293 @@
 ﻿using AutoMapper;
-using ConstructorAdminAPI.Core.Repositories;
-using ConstructorAdminAPI.Models.DTOs;
-using ConstructorAdminAPI.Models.Entities;
+using Constructor_API.Core.Repositories;
+using Constructor_API.Helpers.Exceptions;
+using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Read;
+using Constructor_API.Models.Entities;
 using MongoDB.Bson;
+using System.ComponentModel.DataAnnotations;
 
-namespace ConstructorAdminAPI.Application.Services
+namespace Constructor_API.Application.Services
 {
     public class FloorService
     {
         IFloorRepository _floorRepository;
         IGraphPointRepository _graphPointRepository;
-        IStairRepository _stairRepository;
+        IFloorConnectionRepository _floorConnectionRepository;
+        IBuildingRepository _buildingRepository;
+        IProjectRepository _projectRepository;
+        IPredefinedGraphPointTypeRepository _predefinedGraphPointTypeRepository;
         IMapper _mapper;
 
         public FloorService(IFloorRepository floorRepository, IGraphPointRepository graphPointRepository,
-            IStairRepository stairRepository, IMapper mapper)
+            IFloorConnectionRepository floorConnectionRepository, IBuildingRepository buildingRepository, IMapper mapper,
+            IProjectRepository projectRepository, IPredefinedGraphPointTypeRepository predefinedGraphPointTypeRepository)
         {
             _floorRepository = floorRepository;
             _graphPointRepository = graphPointRepository;
-            _stairRepository = stairRepository;
+            _floorConnectionRepository = floorConnectionRepository;
+            _buildingRepository = buildingRepository;
             _mapper = mapper;
+            _projectRepository = projectRepository;
+            _predefinedGraphPointTypeRepository = predefinedGraphPointTypeRepository;
         }
 
-        public async Task<Result.Result> InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
+        public async Task InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
         {
-            //Result.Result result = new();
+            //Проверка на повтор этажа
             if (await _floorRepository.FirstOrDefaultAsync(f =>
-                f.Building == floorDto.Building && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != null)
-                return Result.Result.Error(new Result.Error("Floor already exists", 400));
+                f.BuildingId == floorDto.BuildingId && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != null)
+                throw new AlreadyExistsException("Floor already exists");
+            DateTime now = DateTime.UtcNow;
 
-            //if (await _buildingRepository.FirstOrDefaultAsync(b =>
-            //   b.Name == floorDto.Building, cancellationToken) == null)
-            //    return Result.Result.Error(new Result.Error("Building doesn`t exist", 404));
+            //Проверка на наличие здания
+            var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+               b.Id == floorDto.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
 
-            var graphPoints = floorDto.GraphPoints == null ? [] : floorDto.GraphPoints;
-            List<string> graphIds = [];
-            var stairs = await _stairRepository.ListAsync(s => s.Building == floorDto.Building, cancellationToken);
-            List<Stair> updatedStairs = [];
+            var project = await _projectRepository.FirstOrDefaultAsync(p =>
+                p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
 
-            foreach (var gp in graphPoints)
-            {
-                if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == gp.Value.Id, cancellationToken) != null)
-                    return Result.Result.Error(new Result.Error($"Graph point {gp.Value.Id} already exists", 400));
-
-                graphIds.Add(gp.Value.Id);
-
-                if (gp.Value.StairId is null) continue;
-
-                var stairForUpdate = updatedStairs.Where(s => s.Id == gp.Value.StairId).FirstOrDefault();
-
-                if (stairForUpdate is null)
-                {
-                    Stair? stair = await _stairRepository.FirstOrDefaultAsync(z => z.Id == gp.Value.StairId, cancellationToken);
-                    if (stair is null)
-                    {
-                        var newStair = new Stair
-                        {
-                            Id = gp.Value.StairId,
-                            Building = floorDto.Building,
-                            StairPoint = gp.Value.StairId,
-                            Links = [],
-                        };
-                        updatedStairs.Add(newStair);
-                        await _stairRepository.AddAsync(newStair, cancellationToken);
-                    }
-                    else
-                    {
-                        updatedStairs.Add(stair);
-                    }
-                }
-                else
-                {
-                    stairForUpdate.Links = stairForUpdate.Links == null ?[] : stairForUpdate.Links;
-                    if (!stairForUpdate.Links.Any(x => x == gp.Value.Id))
-                    {
-                        stairForUpdate.Links.Append(gp.Value.Id);
-                    }
-                }
-            }
-
-            for (int i = 0; i < stairs.Count; i++)
-            {
-                await _stairRepository.UpdateAsync(stairs[i].Id, stairs[i], cancellationToken);
-            }
-
+            //Проверка на наличие dto точек графа, если нет, то ставится пустой массив
+            CreateGraphPointFromFloorDto[] graphPointDtos = floorDto.GraphPoints ?? [];
+            //Массив для id точек
+            string[] graphIds = new string[graphPointDtos.Length];
+            //Лист для обновленных и новых соединений
+            List<FloorConnection> updatedConnections = [];
+            List<FloorConnection> createdConnections = [];
+            //Массив для точек
+            GraphPoint[] graphPoints = new GraphPoint[graphPointDtos.Length];
+            //Маппинг этажа, заполнение полей
             Floor floor = _mapper.Map<Floor>(floorDto);
             floor.Id = ObjectId.GenerateNewId().ToString();
-            floor.GraphPoints = graphIds.ToArray();
-            floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
+            //Обновление здания, добавление в него этажа
+            building.FloorIds ??= [];
+            building.FloorIds = [..building.FloorIds.Append(floor.Id)];
+            await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+
+            //Поиск предопределенных типов
+            var predefinedTypes = await _predefinedGraphPointTypeRepository.ListAsync(cancellationToken);
+
+            CreateGraphPointFromFloorDto? point;
+
+            //Проверка комнат
+            floor.Rooms ??= [];
+            foreach (var room in floor.Rooms)
+            {
+                point = graphPointDtos.FirstOrDefault(g => g.Id == room.Id);
+                if (point is null)
+                    throw new NotFoundException($"There is a room {room.Id} without graph point");
+                else if (point.Types.Contains("corridor"))
+                    throw new ValidationException($"Graph point {room.Id} has wrong type \"corridor\"");
+                else
+                {
+                    if (room.Doors != null && point.Links != null)
+                    {
+                        foreach (var door in room.Doors)
+                            if (!graphPointDtos.Any(g => g.Id == door.Id))
+                                throw new NotFoundException($"There is a door {door.Id} without graph point");
+                            else if (!graphPointDtos.FirstOrDefault(g => g.Id == door.Id).Types.Contains("door"))
+                                throw new ValidationException($"Graph point {room.Id} has not type \"door\"");
+                            else if (point.Links.Contains(graphPointDtos.FirstOrDefault(g => g.Id == door.Id).Id))
+                                throw new ValidationException($"Graph point {room.Id} of room is not linked with graph point of door");
+                        if (room.Doors.Length != point.Links.Length)
+                            throw new ValidationException("Room point has extra links");
+                    }
+                }
+                room.CreatedAt = now;
+                room.UpdatedAt = now;  
+            }
+
+            //Работа с каждой точкой
+            for (int i = 0; i < graphPointDtos.Length; i++)
+            {
+                //Проверка на наличие точки в БД
+                if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPointDtos[i].Id, cancellationToken) != null)
+                    throw new AlreadyExistsException($"Graph point {graphPointDtos[i].Id} already exists");
+
+                //Проверка по названиям внутри здания
+                //if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPointDtos[i].Id, cancellationToken) != null)
+                //    throw new AlreadyExistsException($"Graph point {graphPointDtos[i].Id} already exists");
+
+                //Маппинг точки, заполнение полей
+                GraphPoint gp = _mapper.Map<GraphPoint>(graphPointDtos[i]);
+                gp.FloorId = floor.Id;
+
+                //Проверка типов
+                foreach (string type in gp.Types)
+                {
+                    //Предопределенные
+                    if (!predefinedTypes.Any(t => t.Id == type))
+                    {
+                        //Заданные пользователем
+                        if (project.CustomGraphPointTypes == null || !project.CustomGraphPointTypes.Any(t => t.Name == type))
+                        {
+                            throw new NotFoundException($"Graph point type \"{type}\" is not found");
+                        }
+                    }
+                }
+
+                //Заполнение массивов
+                graphPoints[i] = gp;
+                graphIds[i] = gp.Id;
+
+                //Проверка на наличие id связи этажей
+                if (gp.ConnectionId == null) continue;
+
+                //Проверка на наличие связи в БД
+                FloorConnection? connection = await _floorConnectionRepository.FirstOrDefaultAsync(z => 
+                    z.Id == gp.ConnectionId, cancellationToken);
+
+                //Если ее нет
+                if (connection == null)
+                {
+                    //Поиск связи в массиве для созданных связей
+                    var connectionForCreation = createdConnections.FirstOrDefault(c => c.Id == gp.ConnectionId);
+                    //Если ее нет, то создается новая
+                    if (connectionForCreation == null)
+                    {
+                        var newConnection = new FloorConnection
+                        {
+                            Id = gp.ConnectionId,
+                            BuildingId = building.Id,
+                            Links = [gp.Id],
+                            CreatedAt = now,
+                            UpdatedAt = now,
+                        };
+                        createdConnections.Add(newConnection);
+                    }
+                    //Если есть, то выбрасывается исключение, так как связь только между разными этажами
+                    else
+                    {
+                        throw new AlreadyExistsException(
+                            $"There is more than 1 graph point with ConnectionId {gp.ConnectionId} on floor {floorDto.FloorNumber}");
+                    }
+                }
+                //Если связь есть в БД
+                else
+                {
+                    //Поиск связи в массиве для созданных связей
+                    var connectionForUpdate = updatedConnections.FirstOrDefault(c => c.Id == connection.Id);
+                    //Если ее нет
+                    if (connectionForUpdate == null)
+                    {
+                        if (connection.Links == null) 
+                            connection.Links = [gp.Id];
+                        else
+                            connection.Links = [.. connection.Links.Append(gp.Id)];
+                        connection.UpdatedAt = DateTime.UtcNow;
+                        updatedConnections.Add(connection);
+                    }
+                    //Если она есть, то выбрасывается исключение
+                    else
+                    {
+                        throw new AlreadyExistsException(
+                            $"There is more than 1 graph point with ConnectionId {gp.ConnectionId} on floor {floorDto.FloorNumber}");
+                    }
+                }
+            }
+
+            //Добавление и обновление соединений
+            if (createdConnections.Count > 0)
+                await _floorConnectionRepository.AddRangeAsync(createdConnections, cancellationToken);
+
+            foreach (var update in updatedConnections)
+            {
+                await _floorConnectionRepository.UpdateAsync(s => s.Id == update.Id,
+                    update, cancellationToken);
+            }
+
+            floor.GraphPoints = [..graphIds];
+            //floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
 
             await _floorRepository.AddAsync(floor, cancellationToken);
-            await _graphPointRepository.AddRangeAsync(graphPoints.Values.ToArray(), cancellationToken);
+            if (graphPoints.Length > 0)
+                await _graphPointRepository.AddRangeAsync([..graphPoints], cancellationToken);
 
-            await _stairRepository.SaveChanges();
-
-            return Result.Result.Success();
+            await _floorConnectionRepository.SaveChanges();
         }
 
-        public async Task<Result.Result<IReadOnlyList<Floor>>> GetAllFloors(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Floor>> GetAllFloors(CancellationToken cancellationToken)
         {
             var res = await _floorRepository.ListAsync(cancellationToken);
-            return Result.Result<IReadOnlyList<Floor>>.Success(res);
+            return res;
         }
 
-        public async Task<Result.Result<IReadOnlyList<Floor>>> GetFloorsByBuilding(string building, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<GraphPoint>> GetGraphPointsByFloor(string id, CancellationToken cancellationToken)
         {
-            var res = await _floorRepository.ListAsync(f => f.Building == building, cancellationToken);
-            return Result.Result<IReadOnlyList<Floor>>.Success(res);
+            if (await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken) == null)
+                throw new NotFoundException("Floor is not found");
+
+            var res = await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken);
+            return res;
         }
 
-        public async Task<Result.Result<Floor>> GetFloorByBuildingAndNumber(string building, int number, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<FloorConnection>> GetStairsByFloor(string id, CancellationToken cancellationToken)
         {
-            var res = await _floorRepository.FirstOrDefaultAsync(f => f.Building == building &&
-                f.FloorNumber == number, cancellationToken);
-            if (res == null) return Result.Result<Floor>.Error(new Result.Error("Floor not found", 404));
-            return Result.Result<Floor>.Success(res);
+            if (await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken) == null)
+                throw new NotFoundException("Floor is not found");
+
+            var graphPoints = await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken);
+            if (graphPoints == null) throw new NotFoundException("Graph points are not found");
+
+            var stairIds = new List<string>();
+            var res = new List<FloorConnection>();
+
+            foreach (var graphPoint in graphPoints)
+            {
+                if (graphPoint.ConnectionId != null) stairIds.Add(graphPoint.ConnectionId);
+            }
+
+            foreach (var stairId in stairIds)
+            {
+                var stair = await _floorConnectionRepository.FirstAsync(s => s.Id == stairId, cancellationToken);
+                if (stair == null) throw new NotFoundException($"Stair with id {stairId} is not found");
+                res.Add(stair);
+            }
+
+            return res;
         }
 
-        public async Task<Result.Result<Floor>> GetFloorById(string id, CancellationToken cancellationToken)
+        public async Task<Floor> GetFloorById(string id, CancellationToken cancellationToken)
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            if (floor == null) return Result.Result<Floor>.Error(new Result.Error("Floor not found", 404));
+            if (floor == null) throw new NotFoundException("Floor is not found");
 
-            return Result.Result<Floor>.Success(floor);
+            return floor;
+        }
+
+        public async Task DeleteFloor(string id, CancellationToken cancellationToken)
+        {
+            var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Floor is not found");
+
+            foreach (var point in floor.GraphPoints)
+            {
+                var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Links != null &&
+                    c.Links.Contains(point), cancellationToken);
+                if (connection is not null)
+                {
+                    if (connection.Links is not null)
+                        connection.Links = [..connection.Links.Where(l => l != point)];
+                    connection.UpdatedAt = DateTime.UtcNow;
+                    await _floorConnectionRepository.UpdateAsync(c => c.Id == connection.Id,
+                        connection, cancellationToken);
+                }
+            }
+            await _graphPointRepository.RemoveRangeAsync(g => floor.GraphPoints.Contains(g.Id), cancellationToken);
+            await _floorRepository.RemoveAsync(f => f.Id == id, cancellationToken);
+            await _floorRepository.SaveChanges();
+        }
+
+        public async Task<GetFloorDto> GetFloorByIdWithGraphPoints(string id,
+            CancellationToken cancellationToken)
+        {
+            var floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == id, cancellationToken) 
+                ?? throw new NotFoundException("Floor is not found");
+            GetFloorDto res = _mapper.Map<GetFloorDto>(floor);
+
+            res.GraphPoints = [..(await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken))];
+
+            return res;
         }
     }
 }
