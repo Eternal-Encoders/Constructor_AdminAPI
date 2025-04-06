@@ -6,6 +6,7 @@ using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Infractructure;
 using Constructor_API.Infractructure.Repositories;
 using Constructor_API.Models.Entities;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -22,9 +23,10 @@ using static System.Net.Mime.MediaTypeNames;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+Env.Load();
 //Добавление файла конфигурации
-builder.Configuration.AddJsonFile("config.json");
+builder.Configuration.AddJsonFile("config.json").AddEnvironmentVariables();
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
