@@ -25,7 +25,7 @@ using static System.Net.Mime.MediaTypeNames;
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 //Добавление файла конфигурации
-builder.Configuration.AddJsonFile("config.json").AddEnvironmentVariables();
+builder.Configuration.AddEnvironmentVariables();
 
 
 builder.Services.AddControllers()
