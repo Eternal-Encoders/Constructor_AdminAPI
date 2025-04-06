@@ -15,9 +15,9 @@ namespace Constructor_API.Infractructure
         public MongoDBContext(IConfiguration configuration)
         {
             _configuration = configuration;
-            MongoClient = new MongoClient(_configuration["ConnectionStrings:Server"]);
+            MongoClient = new MongoClient(_configuration["Server"]);
             if (MongoClient != null ) 
-                _database = MongoClient.GetDatabase(_configuration["ConnectionStrings:DatabaseName"]);
+                _database = MongoClient.GetDatabase(_configuration["DatabaseName"]);
         }
 
         public async Task AddCommand(Func<Task> func)
