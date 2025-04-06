@@ -14,7 +14,7 @@ namespace Constructor_API.Helpers
                 .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
 
-            CreateMap<Floor, GetFloorDto>();
+            CreateMap<Floor, GetFloorDto>().ForMember(x => x.GraphPoints, opt => opt.Ignore());
 
             CreateMap<CreateBuildingDto, Building>()
                 .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))

@@ -16,10 +16,10 @@ namespace Constructor_API.Infractructure.Repositories
         public ProjectUserMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
             projectCollection = dbContext.GetCollection<Project>(typeof(Project).Name);
-            buildingCollection = dbContext.GetCollection<Building>(typeof(Project).Name);
-            floorCollection = dbContext.GetCollection<Floor>(typeof(Project).Name);
-            graphPointCollection = dbContext.GetCollection<GraphPoint>(typeof(Project).Name);
-            floorConnectionCollection = dbContext.GetCollection<FloorConnection>(typeof(Project).Name);
+            buildingCollection = dbContext.GetCollection<Building>(typeof(Building).Name);
+            floorCollection = dbContext.GetCollection<Floor>(typeof(Floor).Name);
+            graphPointCollection = dbContext.GetCollection<GraphPoint>(typeof(GraphPoint).Name);
+            floorConnectionCollection = dbContext.GetCollection<FloorConnection>(typeof(FloorConnection).Name);
         }
 
         public async Task<string[]> GetUsersForProject(string id)
@@ -36,40 +36,40 @@ namespace Constructor_API.Infractructure.Repositories
 
         public async Task<string[]> GetUsersForBuilding(string id)
         {
-            var buildingUsers = await GetUsersForProject(
-                await buildingCollection.Find(b => b.Id == id)
+            id = await buildingCollection.Find(b => b.Id == id)
                 .Project(b => b.ProjectId)
-                .FirstOrDefaultAsync());
+                .FirstOrDefaultAsync();
+            var buildingUsers = await GetUsersForProject(id);
 
             return buildingUsers;
         }
 
         public async Task<string[]> GetUsersForFloor(string id)
         {
-            var floorUsers = await GetUsersForBuilding(
-                await floorCollection.Find(f => f.Id == id)
+            id = await floorCollection.Find(f => f.Id == id)
                 .Project(f => f.BuildingId)
-                .FirstOrDefaultAsync());
+                .FirstOrDefaultAsync();
+            var floorUsers = await GetUsersForBuilding(id);
 
             return floorUsers;
         }
 
         public async Task<string[]> GetUsersForGraphPoint(string id)
         {
-            var graphPointUsers = await GetUsersForFloor(
-                await graphPointCollection.Find(g => g.Id == id)
+            id = await graphPointCollection.Find(g => g.Id == id)
                 .Project(g => g.FloorId)
-                .FirstOrDefaultAsync());
+                .FirstOrDefaultAsync();
+            var graphPointUsers = await GetUsersForFloor(id);
 
             return graphPointUsers;
         }
 
         public async Task<string[]> GetUsersForFloorConnection(string id)
         {
-            var floorConnectionUsers = await GetUsersForBuilding(
-                await floorConnectionCollection.Find(f => f.Id == id)
+            id = await floorConnectionCollection.Find(f => f.Id == id)
                 .Project(f => f.BuildingId)
-                .FirstOrDefaultAsync());
+                .FirstOrDefaultAsync();
+            var floorConnectionUsers = await GetUsersForBuilding(id);
 
             return floorConnectionUsers;
         }

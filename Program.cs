@@ -24,6 +24,7 @@ using static System.Net.Mime.MediaTypeNames;
 var builder = WebApplication.CreateBuilder(args);
 
 //Добавление файла конфигурации
+builder.Configuration.AddJsonFile("config.json");
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
@@ -86,6 +87,7 @@ builder.Services.AddScoped<FloorService>();
 builder.Services.AddScoped<BuildingService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<PathService>();
 
 
 builder.Services.AddScoped<IAuthorizationHandler, UserAuthorizationHandler>();

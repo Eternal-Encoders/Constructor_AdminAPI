@@ -22,10 +22,10 @@ namespace Constructor_API.Models.InnerObjects
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [BsonElement("image_id")]
-        [JsonPropertyName("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? ImageId { get; set; }
+        //[BsonElement("image_id")]
+        //[JsonPropertyName("image_id")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string? ImageId { get; set; }
 
         [BsonRequired]
         [BsonElement("created_at")]

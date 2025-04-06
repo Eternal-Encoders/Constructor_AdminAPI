@@ -10,7 +10,7 @@ namespace Constructor_API.Infractructure
         private readonly IConfiguration _configuration;
         public IClientSessionHandle _session;
         public MongoClient MongoClient { get; set; }
-        private readonly List<Func<Task>> _commands = new List<Func<Task>>();
+        private readonly List<Func<Task>> _commands = [];
 
         public MongoDBContext(IConfiguration configuration)
         {
@@ -20,12 +20,13 @@ namespace Constructor_API.Infractructure
                 _database = MongoClient.GetDatabase(_configuration["ConnectionStrings:DatabaseName"]);
         }
 
-        public void AddCommand(Func<Task> func)
+        public async Task AddCommand(Func<Task> func)
         {
             _commands.Add(func);
+            await Task.CompletedTask;
         }
 
-        public async Task<int> SaveChanges()
+        public async Task SaveChanges()
         {
             using (_session = await MongoClient.StartSessionAsync())
             {
@@ -36,20 +37,20 @@ namespace Constructor_API.Infractructure
                 //_commands.Clear();
                 //return _commands.Count;
 
+                _session.StartTransaction();
                 try
                 {
-                    _session.StartTransaction();
-                    var commandTasks = _commands.Select(c => c());
-                    await Task.WhenAll(commandTasks);
+                    foreach (var command in _commands)
+                    {
+                        await command();
+                    }
                     await _session.CommitTransactionAsync();
-                    return _commands.Count;
                 }
-                //catch (Exception ex)
-                //{
-                //    await _session.AbortTransactionAsync();
-                //    throw ex;
-                //    return 0;
-                //}
+                catch (Exception ex)
+                {
+                    await _session.AbortTransactionAsync();
+                    throw ex;
+                }
                 finally
                 {
                     _commands.Clear();

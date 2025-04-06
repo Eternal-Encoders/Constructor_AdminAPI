@@ -14,30 +14,30 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
         [ObjectId]
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         [BsonElement("floor_number")]
         [JsonPropertyName("floor_number")]
-        public int? FloorNumber { get; set; }
+        public int FloorNumber { get; set; }
 
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         [ObjectId]
-        public string? BuildingId { get; set; }
+        public string BuildingId { get; set; }
 
-        [BsonElement("building")]
-        [JsonPropertyName("building")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Building { get; set; }
+        //[BsonElement("building")]
+        //[JsonPropertyName("building")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string Building { get; set; }
 
         [BsonElement("width")]
         [JsonPropertyName("width")]
-        public int? Width { get; set; }
+        public int Width { get; set; }
 
         [BsonElement("height")]
         [JsonPropertyName("height")]
-        public int? Height { get; set; }
+        public int Height { get; set; }
 
         [BsonElement("service")]
         [JsonPropertyName("service")]

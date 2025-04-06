@@ -41,10 +41,10 @@ namespace Constructor_API.Models.InnerObjects
         [Required]
         public double? Height { get; set; }
 
-        //[JsonPropertyName("points")]
-        //[BsonElement("points")]
-        //[BsonIgnoreIfNull]
-        //public Coordinates[]? Points { get; set; }
+        [JsonPropertyName("points")]
+        [BsonElement("points")]
+        [BsonIgnoreIfNull]
+        public Coordinates[]? Points { get; set; }
 
         [JsonPropertyName("fill")]
         [BsonElement("fill")]
@@ -86,8 +86,8 @@ namespace Constructor_API.Models.InnerObjects
         [BsonRequired]
         public DateTime? UpdatedAt { get; set; }
 
-        [BsonElement("updated_at")]
-        [JsonPropertyName("updated_at")]
+        [BsonElement("updated_by")]
+        [JsonPropertyName("updated_by")]
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonIgnoreIfNull]
         [ObjectId]

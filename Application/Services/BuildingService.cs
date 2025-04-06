@@ -82,6 +82,21 @@ namespace Constructor_API.Application.Services
             return res;
         }
 
+        public async Task<IReadOnlyList<GraphPoint>> GetPointsByBuildingAndType(string buildingId, string type,
+            CancellationToken cancellationToken)
+        {
+            var floors = await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
+            List<GraphPoint> res = [];
+
+            for (int i = 0; i < floors.Count; i++)
+            {
+                res.AddRange(await _graphPointRepository.ListAsync(g => g.FloorId == floors[i].Id &&
+                    g.Types.Contains(type), cancellationToken));
+            }
+
+            return res;
+        }
+
         public async Task<Floor> GetFloorInBuildingByNumber(string buildingId, int number, CancellationToken cancellationToken)
         {
             var res = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&

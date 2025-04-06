@@ -23,7 +23,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbCollection.InsertOneAsync(aggregateRoot));
+                _dbContext.AddCommand(async () => await DbCollection.InsertOneAsync(aggregateRoot));
             }
         }
 
@@ -31,7 +31,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbCollection.InsertManyAsync(aggregateRoots));
+                _dbContext.AddCommand(async () => await DbCollection.InsertManyAsync(aggregateRoots));
             }
         }
 
@@ -39,7 +39,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbCollection.DeleteOneAsync(predicate));
+                _dbContext.AddCommand(async () => await DbCollection.DeleteOneAsync(predicate));
             }
         }
 
@@ -47,7 +47,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbCollection.DeleteManyAsync(predicate));
+                _dbContext.AddCommand(async () => await DbCollection.DeleteManyAsync(predicate));
             }
         }
 
@@ -55,7 +55,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(() => DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
+                _dbContext.AddCommand(async () => await DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
             }
         }
 
