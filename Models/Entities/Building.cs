@@ -1,6 +1,6 @@
 ﻿using Constructor_API.Core.Shared;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -23,6 +23,10 @@ namespace Constructor_API.Models.Entities
         [ObjectId]
         public string ProjectId { get; set; }
 
+        [BsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Project Project { get; set; }
+
         [BsonElement("name")]
         [JsonPropertyName("name")]
         [BsonRequired]
@@ -37,6 +41,10 @@ namespace Constructor_API.Models.Entities
         [JsonPropertyName("floors")]
         [BsonRequired]
         public string[]? FloorIds { get; set; }
+
+        [BsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Floor[]? Floors { get; set; }
 
         [BsonElement("url")]
         [JsonPropertyName("url")]
@@ -60,6 +68,7 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("gps")]
         [JsonPropertyName("gps")]
+        [BsonIgnoreIfNull]
         public GPS? GPS { get; set; }
 
         [BsonElement("created_at")]

@@ -76,14 +76,14 @@ builder.Services.AddScoped<MongoDBContext>();
 builder.Services.AddScoped<IBuildingRepository, BuildingMongoRepository>();
 builder.Services.AddScoped<IFloorRepository, FloorMongoRepository>();
 builder.Services.AddScoped<IGraphPointRepository, GraphPointMongoRepository>();
-builder.Services.AddScoped<IFloorConnectionRepository, FloorConnectionMongoRepository>();
+builder.Services.AddScoped<IFloorsTransitionRepository, FloorsTransitionMongoRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectMongoRepository>();
 builder.Services.AddScoped<IPredefinedGraphPointTypeRepository, PredefinedGraphPointTypeMongoRepository>();
 builder.Services.AddScoped<IPredefinedCategoryRepository, PredefinedCategoryMongoRepository>();
 builder.Services.AddScoped<IUserRepository, UserMongoRepository>();
 builder.Services.AddScoped<IProjectUserRepository, ProjectUserMongoRepository>();
 
-builder.Services.AddScoped<FloorConnectionService>();
+builder.Services.AddScoped<FloorsTransitionService>();
 builder.Services.AddScoped<GraphPointService>();
 builder.Services.AddScoped<FloorService>();
 builder.Services.AddScoped<BuildingService>();
@@ -99,7 +99,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
 .AddJwtBearer(options =>
 {
     //Только dev

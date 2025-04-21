@@ -9,6 +9,6 @@ namespace Constructor_API.Core.Repositories
         Task<string[]> GetUsersForBuilding(string id);
         Task<string[]> GetUsersForFloor(string id);
         Task<string[]> GetUsersForGraphPoint(string id);
-        Task<string[]> GetUsersForFloorConnection(string id);
+        Task<string[]> GetUsersForFloorsTransition(string id);
     }
 }

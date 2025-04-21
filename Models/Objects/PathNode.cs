@@ -1,7 +1,6 @@
 ﻿using Constructor_API.Models.Entities;
-using Constructor_API.Models.InnerObjects;
 
-namespace Constructor_API.Helpers
+namespace Constructor_API.Models.Objects
 {
     public class PathNode
     {

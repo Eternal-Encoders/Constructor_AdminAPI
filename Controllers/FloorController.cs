@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -68,13 +69,13 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var floor = await _floorService.GetFloorById(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var floor = await _floorService.GetFloorById(id, CancellationToken.None);
 
             return Ok(floor);
         }
@@ -91,13 +92,13 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var graphPoints = await _floorService.GetGraphPointsByFloor(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var graphPoints = await _floorService.GetGraphPointsByFloor(id, CancellationToken.None);
 
             return Ok(graphPoints);
         }
@@ -114,7 +115,28 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
             var stairs = await _floorService.GetStairsByFloor(id, CancellationToken.None);
+
+            return Ok(stairs);
+        }
+
+        /// <summary>
+        /// Удаляет этаж из БД
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteFloor(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
             if (!auth.Succeeded)
@@ -122,7 +144,57 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            return Ok(stairs);
+            await _floorService.DeleteFloor(id, CancellationToken.None);
+
+            return Ok();
         }
+
+        /// <summary>
+        /// Обновляет тело этажа
+        /// </summary>
+        /// <param name="id">D этажа, 24 символа</param>
+        /// <param name="floorDto">Тело этажа</param>
+        /// <returns></returns>
+        [HttpPatch("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFloor(string id, [FromBody] UpdateFloorDto floorDto)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _floorService.UpdateFloor(id, floorDto, CancellationToken.None);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Обновляет тело этажа
+        /// </summary>
+        /// <param name="id">D этажа, 24 символа</param>
+        /// <param name="floorDto">Тело этажа</param>
+        /// <returns></returns>
+        //[HttpPatch("{id}")]
+        //[Authorize]
+        //public async Task<IActionResult> SaveFloor(string id, [FromBody] UpdateFloorDto floorDto)
+        //{
+        //    if (id == null) return BadRequest("Wrong input");
+        //    if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+        //    var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+        //    if (!auth.Succeeded)
+        //    {
+        //        return Forbid();
+        //    }
+
+        //    await _floorService.UpdateFloor(id, floorDto, CancellationToken.None);
+
+        //    return Ok();
+        //}
     }
 }

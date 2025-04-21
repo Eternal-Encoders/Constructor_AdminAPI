@@ -14,6 +14,10 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.String)]
         public string? Id { get; set; }
 
+        [JsonPropertyName("name")]
+        [BsonElement("name")]
+        public string? Name { get; set; }
+
         [BsonElement("description")]
         [JsonPropertyName("description")]
         public string? Description { get; set; }

@@ -1,6 +1,6 @@
 ﻿using Constructor_API.Core.Shared;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
 {
-    [PointType]
+    //[PointType]
     public class GraphPoint : IAggregateRoot
     {
         //private static readonly Dictionary<string, string> pointTypes = new Dictionary<string, string>()
@@ -50,35 +50,26 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string[] Links { get; set; }
 
-        //private string[]? types;
         [BsonElement("types")]
         [JsonPropertyName("types")]
         [BsonRequired]
         public string[] Types { get; set; }
-        //{
-        //    get { return types; }
-        //    set 
-        //    {
-        //        types = value;
-        //        types = types.Where(x => pointTypes.ContainsKey(x)).ToArray();
-        //    }
-        //} 
 
-        [BsonElement("names")]
-        [JsonPropertyName("names")]
+        [BsonElement("name")]
+        [JsonPropertyName("name")]
         [BsonRequired]
-        public string[] Names { get; set; }
+        public string Name { get; set; }
+
+        [BsonElement("synonyms")]
+        [JsonPropertyName("synonyms")]
+        [BsonRequired]
+        public string[] Synonyms { get; set; }
 
         [BsonElement("floor")]
         [JsonPropertyName("floor")]
         [ObjectId]
         [BsonRequired]
         public string FloorId { get; set; }
-
-        //[BsonElement("building")]
-        //[JsonPropertyName("building")]
-        //[BsonRequired]
-        //public string Building { get; set; }
 
         [BsonElement("time")]
         [JsonPropertyName("time")]
@@ -99,15 +90,10 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public bool IsPassFree { get; set; }
 
-        [BsonElement("connection_id")]
-        [JsonPropertyName("connection_id")]
+        [BsonElement("transition_id")]
+        [JsonPropertyName("transition_id")]
         [BsonIgnoreIfNull]
-        public string? ConnectionId { get; set; }
-
-        //[BsonElement("room_id")]
-        //[JsonPropertyName("room_id")]
-        //[ObjectId]
-        //public string? RoomId { get; set; }
+        public string? TransitionId { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

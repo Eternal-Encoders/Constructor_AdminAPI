@@ -3,9 +3,9 @@ using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.InnerObjects
+namespace Constructor_API.Models.Objects
 {
-    public class Door
+    public class Passage
     {
         [BsonId]
         [Required]
@@ -44,5 +44,15 @@ namespace Constructor_API.Models.InnerObjects
         [Required]
         [BsonRequired]
         public string? Fill { get; set; }
+
+        [BsonElement("created_at")]
+        [JsonPropertyName("created_at")]
+        [BsonRequired]
+        public DateTime? CreatedAt { get; set; }
+
+        [BsonElement("updated_at")]
+        [JsonPropertyName("updated_at")]
+        [BsonRequired]
+        public DateTime? UpdatedAt { get; set; }
     }
 }

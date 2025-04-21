@@ -3,7 +3,7 @@ using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using Constructor_API.Core.Shared;
 using System.ComponentModel.DataAnnotations;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 using Constructor_API.Helpers.Attributes;
 
 namespace Constructor_API.Models.Entities
@@ -31,10 +31,14 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string[] BuildingIds { get; set; }
 
-        [BsonElement("project_users")]
-        [JsonPropertyName("project_users")]
-        [BsonRequired]
-        public string[] ProjectUserIds { get; set; }
+        //[BsonElement("project_users")]
+        //[JsonPropertyName("project_users")]
+        //[BsonRequired]
+        //public string[] ProjectUserIds { get; set; }
+
+        [BsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ProjectUser[]? ProjectUsers { get; set; }
 
         [JsonPropertyName("description")]
         [BsonElement("description")]
@@ -58,6 +62,7 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("custom_graph_point_types")]
         [JsonPropertyName("custom_graph_point_types")]
+        [BsonIgnoreIfNull]
         public GraphPointType[]? CustomGraphPointTypes { get; set; }
     }
 }

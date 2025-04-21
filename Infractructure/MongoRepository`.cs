@@ -19,6 +19,14 @@ namespace Constructor_API.Infractructure
             ReadOnly = isReadOnly;
         }
 
+        public async Task AddCommand(Func<Task> func)
+        {
+            if (!ReadOnly)
+            {
+                await _dbContext.AddCommand(func);
+            }
+        }
+
         public override async Task AddAsync(TAggregateRoot aggregateRoot, CancellationToken cancellationToken)
         {
             if (!ReadOnly)
@@ -56,6 +64,14 @@ namespace Constructor_API.Infractructure
             if (!ReadOnly)
             {
                 _dbContext.AddCommand(async () => await DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
+            }
+        }
+
+        public async Task PartialyUpdateAsync(Expression<Func<TAggregateRoot, bool>> predicate, BsonDocument document, CancellationToken cancellationToken)
+        {
+            if (!ReadOnly)
+            {
+                _dbContext.AddCommand(async () => await DbCollection.UpdateOneAsync(predicate, document));
             }
         }
 

@@ -1,7 +1,10 @@
 ﻿using Constructor_API.Core.Repositories;
 using Constructor_API.Core.Shared;
+using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using System.ComponentModel.DataAnnotations;
 
 namespace Constructor_API.Infractructure.Repositories
 {
@@ -11,7 +14,7 @@ namespace Constructor_API.Infractructure.Repositories
         readonly IMongoCollection<Building> buildingCollection;
         readonly IMongoCollection<Floor> floorCollection;
         readonly IMongoCollection<GraphPoint> graphPointCollection;
-        readonly IMongoCollection<FloorConnection> floorConnectionCollection;
+        readonly IMongoCollection<FloorsTransition> floorsTransitionCollection;
 
         public ProjectUserMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
@@ -19,15 +22,17 @@ namespace Constructor_API.Infractructure.Repositories
             buildingCollection = dbContext.GetCollection<Building>(typeof(Building).Name);
             floorCollection = dbContext.GetCollection<Floor>(typeof(Floor).Name);
             graphPointCollection = dbContext.GetCollection<GraphPoint>(typeof(GraphPoint).Name);
-            floorConnectionCollection = dbContext.GetCollection<FloorConnection>(typeof(FloorConnection).Name);
+            floorsTransitionCollection = dbContext.GetCollection<FloorsTransition>(typeof(FloorsTransition).Name);
         }
 
         public async Task<string[]> GetUsersForProject(string id)
         {
-            var projUserIds = await projectCollection.Find(p => p.Id == id)
-                .Project(p => p.ProjectUserIds)
-                .FirstOrDefaultAsync();
-            var projUsers = await DbCollection.Find(u => projUserIds.Contains(u.Id))
+            if (!ObjectId.TryParse(id, out _))
+                throw new ValidationException("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (projectCollection.Find(p => p.Id == id).FirstOrDefault() == null)
+                throw new NotFoundException($"Project {id} is not found");
+
+            var projUsers = await DbCollection.Find(u => u.ProjectId == id)
                 .Project(u => u.UserId)
                 .ToListAsync();
 
@@ -36,6 +41,11 @@ namespace Constructor_API.Infractructure.Repositories
 
         public async Task<string[]> GetUsersForBuilding(string id)
         {
+            if (!ObjectId.TryParse(id, out _))
+                throw new ValidationException("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (buildingCollection.Find(b => b.Id == id).FirstOrDefault() == null)
+                throw new NotFoundException($"Building {id} is not found");
+
             id = await buildingCollection.Find(b => b.Id == id)
                 .Project(b => b.ProjectId)
                 .FirstOrDefaultAsync();
@@ -46,6 +56,11 @@ namespace Constructor_API.Infractructure.Repositories
 
         public async Task<string[]> GetUsersForFloor(string id)
         {
+            if (!ObjectId.TryParse(id, out _))
+                throw new ValidationException("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (floorCollection.Find(f => f.Id == id).FirstOrDefault() == null)
+                throw new NotFoundException($"Floor {id} is not found");
+
             id = await floorCollection.Find(f => f.Id == id)
                 .Project(f => f.BuildingId)
                 .FirstOrDefaultAsync();
@@ -56,6 +71,11 @@ namespace Constructor_API.Infractructure.Repositories
 
         public async Task<string[]> GetUsersForGraphPoint(string id)
         {
+            if (!ObjectId.TryParse(id, out _))
+                throw new ValidationException("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (graphPointCollection.Find(gp => gp.Id == id).FirstOrDefault() == null)
+                throw new NotFoundException($"Graph point {id} is not found");
+
             id = await graphPointCollection.Find(g => g.Id == id)
                 .Project(g => g.FloorId)
                 .FirstOrDefaultAsync();
@@ -64,14 +84,19 @@ namespace Constructor_API.Infractructure.Repositories
             return graphPointUsers;
         }
 
-        public async Task<string[]> GetUsersForFloorConnection(string id)
+        public async Task<string[]> GetUsersForFloorsTransition(string id)
         {
-            id = await floorConnectionCollection.Find(f => f.Id == id)
+            if (!ObjectId.TryParse(id, out _))
+                throw new ValidationException("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (floorsTransitionCollection.Find(fc => fc.Id == id).FirstOrDefault() == null)
+                throw new NotFoundException($"Floor transition {id} is not found");
+
+            id = await floorsTransitionCollection.Find(f => f.Id == id)
                 .Project(f => f.BuildingId)
                 .FirstOrDefaultAsync();
-            var floorConnectionUsers = await GetUsersForBuilding(id);
+            var floorsTransitionUsers = await GetUsersForBuilding(id);
 
-            return floorConnectionUsers;
+            return floorsTransitionUsers;
         }
     }
 }

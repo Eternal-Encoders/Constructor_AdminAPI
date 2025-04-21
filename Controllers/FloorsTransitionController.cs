@@ -9,14 +9,14 @@ namespace Constructor_API.Controllers
 {
     [Route("floorConnection")]
     [ApiController]
-    public class FloorConnectionController : ControllerBase
+    public class FloorsTransitionController : ControllerBase
     {
-        private readonly FloorConnectionService _floorConnectionService;
+        private readonly FloorsTransitionService _floorsTransitionService;
         private readonly IAuthorizationService _authorizationService;
 
-        public FloorConnectionController(FloorConnectionService floorConnectionService, IAuthorizationService authorizationService)
+        public FloorsTransitionController(FloorsTransitionService floorsTransitionService, IAuthorizationService authorizationService)
         {
-            _floorConnectionService = floorConnectionService;
+            _floorsTransitionService = floorsTransitionService;
             _authorizationService = authorizationService;
         }
 
@@ -38,19 +38,20 @@ namespace Constructor_API.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetConnectionById(string id)
+        public async Task<IActionResult> GetTransitionById(string id)
         {
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _))
                 return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var fc = await _floorConnectionService.GetConnectionById(id, CancellationToken.None);
-
-            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorConnection");
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorsTransition");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var fc = await _floorsTransitionService.GetTransitionById(id, CancellationToken.None);
+
 
             return Ok(fc);
         }
@@ -87,7 +88,7 @@ namespace Constructor_API.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllConnections()
         { 
-            var res = await _floorConnectionService.GetAllConnections(CancellationToken.None);
+            var res = await _floorsTransitionService.GetAllTransitions(CancellationToken.None);
 
             return Ok(res);
         }

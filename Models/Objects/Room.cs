@@ -5,7 +5,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.InnerObjects
+namespace Constructor_API.Models.Objects
 {
     public class Room
     {
@@ -70,11 +70,11 @@ namespace Constructor_API.Models.InnerObjects
         [BsonIgnoreIfNull]
         public RoomChild[]? Children { get; set; }
 
-        [JsonPropertyName("doors")]
-        [BsonElement("doors")]
+        [JsonPropertyName("passages")]
+        [BsonElement("passages")]
         [BsonRequired]
         [Required]
-        public Door[]? Doors { get; set; }
+        public Passage[]? Passages { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

@@ -16,6 +16,12 @@ namespace Constructor_API.Controllers
             _pathService = pathService;
         }
 
+        /// <summary>
+        /// Возвращает массив ID точек, из которых состоит маршрут между указанными точками
+        /// </summary>
+        /// <param name="fromId">ID начальной точки маршрута</param>
+        /// <param name="toId">ID конечной точки маршрута</param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetPath([FromQuery] string fromId,
             [FromQuery] string toId)

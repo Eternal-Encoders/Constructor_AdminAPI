@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Models.DTOs.Read
 {

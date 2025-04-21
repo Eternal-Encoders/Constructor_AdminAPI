@@ -3,6 +3,7 @@ using Constructor_API.Core.Repositories;
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.DTOs.Read;
+using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using MongoDB.Bson;
 
@@ -14,12 +15,12 @@ namespace Constructor_API.Application.Services
         IProjectRepository _projectRepository;
         IFloorRepository _floorRepository;
         IGraphPointRepository _graphPointRepository;
-        IFloorConnectionRepository _floorConnectionRepository;
+        IFloorsTransitionRepository _floorConnectionRepository;
         IMapper _mapper;
 
         public BuildingService(IBuildingRepository buildingRepository, IMapper mapper,
             IProjectRepository projectRepository, IFloorRepository floorRepository,
-            IGraphPointRepository graphPointRepository, IFloorConnectionRepository floorConnectionRepository)
+            IGraphPointRepository graphPointRepository, IFloorsTransitionRepository floorConnectionRepository)
         {
             _buildingRepository = buildingRepository;
             _mapper = mapper;
@@ -150,6 +151,30 @@ namespace Constructor_API.Application.Services
             }
             await _floorRepository.RemoveRangeAsync(f => f.BuildingId == buildingId, cancellationToken);
             await _buildingRepository.RemoveAsync(b => b.Id == buildingId, cancellationToken);
+            await _buildingRepository.SaveChanges();
+        }
+
+        public async Task UpdateBuilding(string buildingId, UpdateBuildingDto buildingDto, CancellationToken cancellationToken)
+        {
+            var prevBuilding = await _buildingRepository.FirstOrDefaultAsync(b =>
+                b.Id == buildingId, cancellationToken) ?? throw new NotFoundException($"Project is not found");
+
+            prevBuilding.GPS = buildingDto.GPS ?? prevBuilding.GPS;
+            prevBuilding.Longitude = buildingDto.Longitude ?? prevBuilding.Longitude;
+            prevBuilding.Latitude = buildingDto.Latitude ?? prevBuilding.Latitude;
+            prevBuilding.Name = buildingDto.Name ?? prevBuilding.Name;
+            prevBuilding.DisplayableName = buildingDto.DisplayableName ?? prevBuilding.DisplayableName;
+            prevBuilding.Url = buildingDto.Url ?? prevBuilding.Url;
+            prevBuilding.ImageId = buildingDto.ImageId ?? prevBuilding.ImageId;
+
+            if (buildingDto.ProjectId != null)
+                if (await _projectRepository.FirstOrDefaultAsync(
+                    p => p.Id == buildingDto.ProjectId, cancellationToken) != null)
+                {
+                    prevBuilding.ProjectId = buildingDto.ProjectId;
+                }
+
+            await _buildingRepository.UpdateAsync(b => b.Id == buildingId, prevBuilding, cancellationToken);
             await _buildingRepository.SaveChanges();
         }
     }

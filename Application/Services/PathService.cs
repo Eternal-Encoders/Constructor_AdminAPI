@@ -1,13 +1,7 @@
-﻿using Constructor_API.Core.Repositories;
-using Constructor_API.Helpers;
-using Constructor_API.Helpers.Exceptions;
+﻿using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
-using Constructor_API.Models.InnerObjects;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.ObjectModel;
-using System.Drawing;
-using System.Linq;
+using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Application.Services
 {
@@ -16,10 +10,10 @@ namespace Constructor_API.Application.Services
         readonly BuildingService _buildingService;
         readonly FloorService _floorService;
         readonly GraphPointService _graphPointService;
-        readonly FloorConnectionService _floorConnectionService;
+        readonly FloorsTransitionService _floorConnectionService;
 
         public PathService(FloorService floorService, GraphPointService graphPointService,
-            FloorConnectionService floorConnectionService, BuildingService buildingService)
+            FloorsTransitionService floorConnectionService, BuildingService buildingService)
         {
             _floorService = floorService;
             _graphPointService = graphPointService;
@@ -84,8 +78,8 @@ namespace Constructor_API.Application.Services
             var closed = new List<PathNode>();
             var open = new List<PathNode>();
 
-            var connections = await _floorConnectionService.GetConnectionsByBuilding(
-                floors.FirstOrDefault(f => f.Id == start.FloorId).BuildingId, CancellationToken.None);
+            var connections = await _floorConnectionService.GetTransitionsByBuilding(
+                floors.FirstOrDefault(f => f.Id == start.FloorId).BuildingId, CancellationToken.None) ?? [];
 
             //Метод для поиска соседей, вложен для возможности изменения floors
             async Task<List<PathNode>> GetNeighbours(PathNode pathNode, GraphPoint goal)
@@ -93,16 +87,16 @@ namespace Constructor_API.Application.Services
                 var result = new List<PathNode>();
 
                 List<GraphPoint> neighbourPoints = [];
-                if (pathNode.GraphPoint.ConnectionId != null)
+                if (pathNode.GraphPoint.TransitionId != null)
                 {
                     if (connections == null)
-                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.ConnectionId} is not found");
-                    var connection = connections.FirstOrDefault(c => c.Id == pathNode.GraphPoint.ConnectionId);
+                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.TransitionId} is not found");
+                    var connection = connections.FirstOrDefault(c => c.Id == pathNode.GraphPoint.TransitionId);
                     if (connection == null)
-                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.ConnectionId} is not found");
-                    connection.Links ??= [];
+                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.TransitionId} is not found");
+                    connection.LinkIds ??= [];
 
-                    foreach (var neighbourId in connection.Links)
+                    foreach (var neighbourId in connection.LinkIds)
                     {
                         if (neighbourId == pathNode.CameFrom?.GraphPoint.Id) continue;
                         neighbourPoints.Add(await _graphPointService.GetGraphPointById(neighbourId, CancellationToken.None));
