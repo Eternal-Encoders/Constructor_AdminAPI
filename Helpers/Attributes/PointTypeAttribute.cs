@@ -11,8 +11,8 @@ namespace Constructor_API.Helpers.Attributes
             if (value is CreateGraphPointFromFloorDto pointDto1)
                 //if (value is GraphPoint pointDto)
                 {
-                bool containsTransition = pointDto1.Types.Contains("stair") ||
-                    pointDto1.Types.Contains("elevator") || pointDto1.Types.Contains("escalator");
+                bool containsTransition = pointDto1.Types.Contains("Stair") ||
+                    pointDto1.Types.Contains("Lift") || pointDto1.Types.Contains("Escalator");
                 if (pointDto1.TransitionId == null && containsTransition)
                 {
                     //throw new ValidationException("Graph point has type \"stair\" but stair id is not specified");
@@ -41,8 +41,8 @@ namespace Constructor_API.Helpers.Attributes
             if (value is CreateGraphPointDto pointDto2)
             //if (value is GraphPoint pointDto)
             {
-                bool containsTransition = pointDto2.Types.Contains("stair") ||
-                    pointDto2.Types.Contains("elevator") || pointDto2.Types.Contains("escalator");
+                bool containsTransition = pointDto2.Types.Contains("Stair") ||
+                    pointDto2.Types.Contains("Lift") || pointDto2.Types.Contains("Escalator");
                 if (pointDto2.TransitionId == null && containsTransition)
                 {
                     //throw new ValidationException("Graph point has type \"stair\" but stair id is not specified");

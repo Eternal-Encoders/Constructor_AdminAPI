@@ -10,7 +10,7 @@ namespace Constructor_API.Infractructure
         private readonly IConfiguration _configuration;
         public IClientSessionHandle _session;
         public MongoClient MongoClient { get; set; }
-        private readonly List<Func<Task>> _commands = [];
+        private readonly List<Func<IClientSessionHandle, Task>> _commands = [];
 
         public MongoDBContext(IConfiguration configuration)
         {
@@ -20,7 +20,7 @@ namespace Constructor_API.Infractructure
                 _database = MongoClient.GetDatabase(_configuration["DatabaseName"]);
         }
 
-        public async Task AddCommand(Func<Task> func)
+        public async Task AddCommand(Func<IClientSessionHandle, Task> func)
         {
             _commands.Add(func);
             await Task.CompletedTask;
@@ -42,7 +42,7 @@ namespace Constructor_API.Infractructure
                 {
                     foreach (var command in _commands)
                     {
-                        await command();
+                        await command(_session);
                     }
                     await _session.CommitTransactionAsync();
                 }

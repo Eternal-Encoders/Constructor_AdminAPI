@@ -11,23 +11,6 @@ namespace Constructor_API.Models.Entities
     //[PointType]
     public class GraphPoint : IAggregateRoot
     {
-        //private static readonly Dictionary<string, string> pointTypes = new Dictionary<string, string>()
-        //{
-        //    ["corridor"] = "corridor",
-        //    ["exit"] = "exit",
-        //    ["fire-exit"] = "fire-exit",
-        //    ["stair"] = "stair",
-        //    ["elevator"] = "elevator",
-        //    ["escalator"] = "escalator",
-        //    ["toilet-m"] = "toilet-m",
-        //    ["toilet-w"] = "toilet-w",
-        //    ["cafe"] = "cafe",
-        //    ["dinning"] = "dinning",
-        //    ["restaurant"] = "restaurant",
-        //    ["wardrobe"] = "wardrobe",
-        //    ["other"] = "other"
-        //};
-
         [BsonId]
         [BsonElement("_id")]
         [JsonPropertyName("id")]
@@ -85,10 +68,15 @@ namespace Constructor_API.Models.Entities
         [JsonPropertyName("info")]
         public string? Info { get; set; }
 
-        [BsonElement("is_pass_free")]
-        [JsonPropertyName("is_pass_free")]
+        [BsonElement("route_active")]
+        [JsonPropertyName("route_active")]
         [BsonRequired]
-        public bool IsPassFree { get; set; }
+        public bool RouteActive { get; set; }
+
+        [BsonElement("search_active")]
+        [JsonPropertyName("search_active")]
+        [BsonRequired]
+        public bool SearchActive { get; set; }
 
         [BsonElement("transition_id")]
         [JsonPropertyName("transition_id")]

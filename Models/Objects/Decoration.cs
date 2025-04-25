@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Objects
 {
-    public class Service
+    public class Decoration
     {
         [BsonElement("x")]
         [JsonPropertyName("x")]
@@ -17,6 +17,12 @@ namespace Constructor_API.Models.Objects
         [Required]
         [BsonRequired]
         public double? Y { get; set; }
+
+        [JsonPropertyName("points")]
+        [BsonElement("points")]
+        [BsonIgnoreIfNull]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Coordinates[]? Points { get; set; }
 
         [BsonElement("data")]
         [JsonPropertyName("data")]

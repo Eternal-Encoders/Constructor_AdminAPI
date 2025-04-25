@@ -33,15 +33,15 @@ namespace Constructor_API.Infractructure.Repositories
                 var buildings = await buildingCollection.Find(b => projectIds.Contains(b.ProjectId)).ToListAsync();
                 foreach (var building in buildings)
                 {
-                    await base.AddCommand(async () => await floorConnectionCollection.DeleteManyAsync(fc => fc.BuildingId == building.Id));
+                    await base.AddCommand(async (IClientSessionHandle s) => await floorConnectionCollection.DeleteManyAsync(fc => fc.BuildingId == building.Id));
                     building.FloorIds ??= [];
-                    await base.AddCommand(async () => await graphPointCollection.DeleteManyAsync(g => building.FloorIds.Contains(g.FloorId)));
-                    await base.AddCommand(async () => await floorCollection.DeleteManyAsync(f => f.BuildingId == building.Id));
+                    await base.AddCommand(async (IClientSessionHandle s) => await graphPointCollection.DeleteManyAsync(g => building.FloorIds.Contains(g.FloorId)));
+                    await base.AddCommand(async (IClientSessionHandle s) => await floorCollection.DeleteManyAsync(f => f.BuildingId == building.Id));
                 }
 
-                await base.AddCommand(async () => await buildingCollection.DeleteManyAsync(b =>
+                await base.AddCommand(async (IClientSessionHandle s) => await buildingCollection.DeleteManyAsync(b =>
                     projectIds.Contains(b.ProjectId)));
-                await base.AddCommand(async () => await projectCollection.DeleteManyAsync(p =>
+                await base.AddCommand(async (IClientSessionHandle s) => await projectCollection.DeleteManyAsync(p =>
                     projectIds.Contains(p.Id)));
 
                 await base.RemoveAsync(predicate, cancellationToken);

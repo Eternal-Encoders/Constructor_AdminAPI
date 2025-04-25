@@ -49,7 +49,7 @@ namespace Constructor_API.Infractructure.Repositories
             aggregateRoot.ProjectUsers = null;
             await base.AddAsync(aggregateRoot, cancellationToken);
 
-            await base.AddCommand(async () => await projectUserCollection.InsertManyAsync(projectUsers));
+            await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.InsertManyAsync(projectUsers));
         }
 
         public override async Task RemoveAsync(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
@@ -58,18 +58,18 @@ namespace Constructor_API.Infractructure.Repositories
             if (project != null)
             {
                 var buildings = await buildingCollection.Find(b => project.BuildingIds.Contains(b.Id)).ToListAsync();
-                await base.AddCommand(async () => await floorConnectionCollection.DeleteManyAsync(fc =>
+                await base.AddCommand(async (IClientSessionHandle s) => await floorConnectionCollection.DeleteManyAsync(fc =>
                     project.BuildingIds.Contains(fc.BuildingId)));
                 foreach (var building in buildings)
                 {
                     building.FloorIds ??= [];
-                    await base.AddCommand(async () => await graphPointCollection.DeleteManyAsync(g => building.FloorIds.Contains(g.FloorId)));
+                    await base.AddCommand(async (IClientSessionHandle s) => await graphPointCollection.DeleteManyAsync(g => building.FloorIds.Contains(g.FloorId)));
                 }
-                await base.AddCommand(async () => await floorCollection.DeleteManyAsync(f =>
+                await base.AddCommand(async (IClientSessionHandle s) => await floorCollection.DeleteManyAsync(f =>
                     project.BuildingIds.Contains(f.BuildingId)));
-                await base.AddCommand(async () => await buildingCollection.DeleteManyAsync(b =>
+                await base.AddCommand(async (IClientSessionHandle s) => await buildingCollection.DeleteManyAsync(b =>
                     project.BuildingIds.Contains(b.Id)));
-                await base.AddCommand(async () => await projectUserCollection.DeleteManyAsync(pu =>
+                await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.DeleteManyAsync(pu =>
                     pu.ProjectId == project.Id));
 
                 await base.RemoveAsync(predicate, cancellationToken);

@@ -22,9 +22,10 @@ namespace Constructor_API.Models.DTOs.Create
         [ObjectId]
         public string? BuildingId { get; set; }
 
-        [JsonPropertyName("image_id")]
+        [JsonPropertyName("image_ids")]
         [ObjectId]
-        public string? ImageId { get; set; }
+        [Required]
+        public string[]? ImageIds { get; set; }
 
         [JsonPropertyName("width")]
         [Required]
@@ -35,9 +36,9 @@ namespace Constructor_API.Models.DTOs.Create
         public int? Height { get; set; }
 
         //Пройдет ли пустой массив?
-        [JsonPropertyName("services")]
+        [JsonPropertyName("decorations")]
         [Required]
-        public Service[]? Services { get; set; }
+        public Decoration[]? Decorations { get; set; }
 
         [JsonPropertyName("graph_points")]
         [Required]
@@ -51,6 +52,7 @@ namespace Constructor_API.Models.DTOs.Create
         //public GraphPointFromFloorDto[]? GraphPoints { get; set; }
 
         [JsonPropertyName("forces")]
+        //[Required]
         public Forces[]? Forces { get; set; }
     }
 }

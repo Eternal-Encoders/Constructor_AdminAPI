@@ -63,9 +63,9 @@ namespace Constructor_API.Application.Services
                     //}
 
                     return (await FindPathAStar(startGP, (await _buildingService.
-                        GetPointsByBuildingAndType(startBuilding.Id, "exit", CancellationToken.None))[0], floors))
+                        GetPointsByBuildingAndType(startBuilding.Id, "Exit", CancellationToken.None))[0], floors))
                         .Item1.Concat((await FindPathAStar((await _buildingService.
-                        GetPointsByBuildingAndType(endBuilding.Id, "exit", CancellationToken.None))[0], endGP, floors))
+                        GetPointsByBuildingAndType(endBuilding.Id, "Exit", CancellationToken.None))[0], endGP, floors))
                         .Item1).ToList();
                 }
             }
@@ -78,7 +78,7 @@ namespace Constructor_API.Application.Services
             var closed = new List<PathNode>();
             var open = new List<PathNode>();
 
-            var connections = await _floorConnectionService.GetTransitionsByBuilding(
+            var transitions = await _floorConnectionService.GetTransitionsByBuilding(
                 floors.FirstOrDefault(f => f.Id == start.FloorId).BuildingId, CancellationToken.None) ?? [];
 
             //Метод для поиска соседей, вложен для возможности изменения floors
@@ -89,14 +89,14 @@ namespace Constructor_API.Application.Services
                 List<GraphPoint> neighbourPoints = [];
                 if (pathNode.GraphPoint.TransitionId != null)
                 {
-                    if (connections == null)
-                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.TransitionId} is not found");
-                    var connection = connections.FirstOrDefault(c => c.Id == pathNode.GraphPoint.TransitionId);
-                    if (connection == null)
-                        throw new NotFoundException($"Floor connection {pathNode.GraphPoint.TransitionId} is not found");
-                    connection.LinkIds ??= [];
+                    if (transitions == null)
+                        throw new NotFoundException($"Floors transition {pathNode.GraphPoint.TransitionId} is not found");
+                    var transition = transitions.FirstOrDefault(c => c.Id == pathNode.GraphPoint.TransitionId);
+                    if (transition == null)
+                        throw new NotFoundException($"Floors transition {pathNode.GraphPoint.TransitionId} is not found");
+                    transition.LinkIds ??= [];
 
-                    foreach (var neighbourId in connection.LinkIds)
+                    foreach (var neighbourId in transition.LinkIds)
                     {
                         if (neighbourId == pathNode.CameFrom?.GraphPoint.Id) continue;
                         neighbourPoints.Add(await _graphPointService.GetGraphPointById(neighbourId, CancellationToken.None));

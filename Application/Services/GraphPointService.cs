@@ -99,7 +99,7 @@ namespace Constructor_API.Application.Services
             foreach (string type in graphPoint.Types)
             {
                 //Если нет мреди предопределенных
-                if (!predefinedTypes.Any(t => t.Id == type))
+                if (!predefinedTypes.Any(t => t.Name == type))
                 {
                     //Проверяются пользовательские
                     if (project.CustomGraphPointTypes == null || !project.CustomGraphPointTypes.Any(t => t.Name == type))

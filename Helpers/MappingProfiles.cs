@@ -37,6 +37,9 @@ namespace Constructor_API.Helpers
             CreateMap<CreateProjectUserDto, ProjectUser>()
                 .ForMember(x => x.AddedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
+            CreateMap<CreateFloorsTransitionDto, FloorsTransition>()
+                .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
         }
     }
 }

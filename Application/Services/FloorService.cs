@@ -53,35 +53,35 @@ namespace Constructor_API.Application.Services
 
             DateTime now = DateTime.UtcNow;
             var corridorPreTypes = (await _predefinedGraphPointTypeRepository.ListAsync(t =>
-                t.Category == "corridor", cancellationToken)).Select(x => x.Id);
+                t.Category == "Corridor", cancellationToken)).Select(x => x.Name);
             var roomPreTypes = (await _predefinedGraphPointTypeRepository.ListAsync(t =>
-                t.Category == "room", cancellationToken)).Select(x => x.Id);
+                t.Category == "Room", cancellationToken)).Select(x => x.Name);
             var passagePreTypes = (await _predefinedGraphPointTypeRepository.ListAsync(t =>
-                t.Category == "passage", cancellationToken)).Select(x => x.Id);
+                t.Category == "Passage", cancellationToken)).Select(x => x.Name);
             CreateGraphPointFromFloorDto? roomPoint;
 
             if (customGraphPointTypes != null)
             {
                 if (corridorPreTypes == null)
-                    corridorPreTypes = customGraphPointTypes.Where(x => x.Category == "corridor")
+                    corridorPreTypes = customGraphPointTypes.Where(x => x.Category == "Corridor")
                         .Select(x => x.Name);
                 else
                     corridorPreTypes = corridorPreTypes.Concat(customGraphPointTypes
-                        .Where(x => x.Category == "corridor").Select(x => x.Name));
+                        .Where(x => x.Category == "Corridor").Select(x => x.Name));
 
                 if (roomPreTypes == null)
-                    roomPreTypes = customGraphPointTypes.Where(x => x.Category == "room")
+                    roomPreTypes = customGraphPointTypes.Where(x => x.Category == "Room")
                         .Select(x => x.Name);
                 else
                     roomPreTypes = roomPreTypes.Concat(customGraphPointTypes
-                        .Where(x => x.Category == "room").Select(x => x.Name));
+                        .Where(x => x.Category == "Room").Select(x => x.Name));
 
                 if (passagePreTypes == null)
-                    passagePreTypes = customGraphPointTypes.Where(x => x.Category == "passage")
+                    passagePreTypes = customGraphPointTypes.Where(x => x.Category == "Passage")
                         .Select(x => x.Name);
                 else
                     passagePreTypes = passagePreTypes.Concat(customGraphPointTypes
-                        .Where(x => x.Category == "passage").Select(x => x.Name));
+                        .Where(x => x.Category == "Passage").Select(x => x.Name));
             }
 
             foreach (var room in rooms)
@@ -90,11 +90,11 @@ namespace Constructor_API.Application.Services
                 if (roomPoint is null)
                     throw new NotFoundException($"There is a room {room.Id} without graph point");
                 else if (roomPoint.Types != null ? corridorPreTypes.Intersect(roomPoint.Types).Count() != 0 : false)
-                    throw new ValidationException($"Graph point {room.Id} has type of category \"corridor\" but it is room");
+                    throw new ValidationException($"Graph point {room.Id} has type of category \"Corridor\" but it is room");
                 else if (roomPoint.Types != null ? passagePreTypes.Intersect(roomPoint.Types).Count() != 0 : false)
-                    throw new ValidationException($"Graph point {room.Id} has type of category \"passage\" but it is room");
+                    throw new ValidationException($"Graph point {room.Id} has type of category \"Passage\" but it is room");
                 else if (roomPoint.Types != null ? roomPreTypes.Intersect(roomPoint.Types).Count() == 0 : true)
-                    throw new ValidationException($"Graph point {room.Id} has not type of category \"room\"");
+                    throw new ValidationException($"Graph point {room.Id} has not type of category \"Room\"");
                 else
                 {
                     if (!graphIdsDict.ContainsKey(room.Id))
@@ -108,11 +108,11 @@ namespace Constructor_API.Application.Services
                             if (gpPassage == null)
                                 throw new NotFoundException($"There is a passage {passage.Id} without graph point");
                             else if (gpPassage.Types != null ? passagePreTypes.Intersect(gpPassage.Types).Count() == 0 : true)
-                                throw new ValidationException($"Graph point {passage.Id} has not type of category \"passage\"");
+                                throw new ValidationException($"Graph point {passage.Id} has not type of category \"Passage\"");
                             else if (gpPassage.Types != null ? corridorPreTypes.Intersect(roomPoint.Types).Count() != 0 : false)
-                                throw new ValidationException($"Graph point {passage.Id} has type of category \"corridor\" but it is passage");
+                                throw new ValidationException($"Graph point {passage.Id} has type of category \"Corridor\" but it is passage");
                             else if (gpPassage.Types != null ? roomPreTypes.Intersect(roomPoint.Types).Count() != 0 : false)
-                                throw new ValidationException($"Graph point {passage.Id} has type of category \"room\" but it is passage");
+                                throw new ValidationException($"Graph point {passage.Id} has type of category \"Room\" but it is passage");
                             else if (gpPassage.Links == null || !roomPoint.Links.Contains(gpPassage.Id))
                                 throw new ValidationException($"There is no mutual connection between graph points {room.Id} and {gpPassage.Id}");
 
@@ -137,7 +137,7 @@ namespace Constructor_API.Application.Services
             foreach (string type in graphPoint.Types)
             {
                 //Предопределенные
-                if (!predefinedTypes.Any(t => t.Id == type))
+                if (!predefinedTypes.Any(t => t.Name == type))
                 {
                     //Заданные пользователем
                     if (customGraphPointTypes == null || !customGraphPointTypes.Any(t => t.Name == type))
@@ -456,10 +456,10 @@ namespace Constructor_API.Application.Services
             }
 
             prevFloor.FloorName = floorDto.FloorName ?? prevFloor.FloorName;
-            prevFloor.ImageId = floorDto.ImageId;
+            prevFloor.ImageIds = floorDto.ImageIds;
             prevFloor.Width = floorDto.Width ?? prevFloor.Width;
             prevFloor.Height = floorDto.Height ?? prevFloor.Height;
-            prevFloor.Services = floorDto.Services ?? prevFloor.Services;
+            prevFloor.Decorations = floorDto.Decorations ?? prevFloor.Decorations;
             prevFloor.UpdatedAt = now;
             prevFloor.Forces = floorDto.Forces ?? prevFloor.Forces;
 

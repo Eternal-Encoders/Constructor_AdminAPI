@@ -39,9 +39,9 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonPropertyName("height")]
         public int Height { get; set; }
 
-        [BsonElement("service")]
-        [JsonPropertyName("service")]
-        public Service[]? Service { get; set; }
+        [BsonElement("decorations")]
+        [JsonPropertyName("decorations")]
+        public Decoration[]? Decorations { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]

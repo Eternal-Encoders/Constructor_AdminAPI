@@ -35,10 +35,17 @@ namespace Constructor_API.Models.Entities
         [BsonIgnore]
         public Building Building { get; set; }
 
-        [BsonElement("image_id")]
-        [JsonPropertyName("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? ImageId { get; set; }
+        [BsonElement("image_ids")]
+        [JsonPropertyName("image_ids")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        public string[]? ImageIds { get; set; }
+
+        //[BsonElement("images")]
+        //[JsonPropertyName("images")]
+        //[BsonIgnoreIfNull]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string[]? Images { get; set; }
 
         [BsonElement("width")]
         [JsonPropertyName("width")]
@@ -50,15 +57,15 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public int Height { get; set; }
 
-        [BsonElement("services")]
-        [JsonPropertyName("services")]
-        [BsonRequired]
-        public Service[] Services { get; set; }
+        [BsonElement("decorations")]
+        [JsonPropertyName("decorations")]
+        //[BsonRequired]
+        public Decoration[]? Decorations { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]
-        [BsonRequired]
-        public Room[] Rooms { get; set; }
+        //[BsonRequired]
+        public Room[]? Rooms { get; set; }
 
         [BsonElement("graph")]
         [JsonPropertyName("graph")]

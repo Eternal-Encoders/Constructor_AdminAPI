@@ -31,7 +31,7 @@ namespace Constructor_API.Infractructure.Repositories
                     Time = gp.Time,
                     Description = gp.Description,
                     Info = gp.Info,
-                    IsPassFree = gp.IsPassFree,
+                    RouteActive = gp.RouteActive,
                     TransitionId = gp.TransitionId
                 })
                 .ToListAsync();

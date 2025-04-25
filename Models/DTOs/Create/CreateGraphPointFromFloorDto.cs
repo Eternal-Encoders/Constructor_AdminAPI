@@ -11,23 +11,6 @@ namespace Constructor_API.Models.DTOs.Create
     //[PointType]
     public class CreateGraphPointFromFloorDto
     {
-        //private static readonly Dictionary<string, GraphPointType> pointTypes = new Dictionary<string, GraphPointType>()
-        //{
-        //    ["corridor"] = new GraphPointType { "corridor" },
-        //    ["exit"] = "exit",
-        //    ["fire-exit"] = "fire-exit",
-        //    ["stair"] = "stair",
-        //    ["elevator"] = "elevator",
-        //    ["escalator"] = "escalator",
-        //    ["toilet-m"] = "toilet-m",
-        //    ["toilet-w"] = "toilet-w",
-        //    ["cafe"] = "cafe",
-        //    ["dinning"] = "dinning",
-        //    ["restaurant"] = "restaurant",
-        //    ["wardrobe"] = "wardrobe",
-        //    ["other"] = "other"
-        //};
-
         [JsonPropertyName("id")]
         [Required]
         [ObjectId]
@@ -68,9 +51,13 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("info")]
         public string? Info { get; set; }
 
-        [JsonPropertyName("is_pass_free")]
+        [JsonPropertyName("route_active")]
         [Required]
-        public bool? IsPassFree { get; set; }
+        public bool? RouteActive { get; set; }
+
+        [JsonPropertyName("search_active")]
+        [Required]
+        public bool? SearchActive { get; set; }
 
         [ObjectId]
         [JsonPropertyName("transition_id")]

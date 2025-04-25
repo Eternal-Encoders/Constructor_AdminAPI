@@ -21,10 +21,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? BuildingId { get; set; }
 
-        [JsonPropertyName("image_id")]
+        [JsonPropertyName("image_ids")]
         [ObjectId]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? ImageId { get; set; }
+        public string[]? ImageIds { get; set; }
 
         [JsonPropertyName("width")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -34,9 +34,9 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Height { get; set; }
 
-        [JsonPropertyName("services")]
+        [JsonPropertyName("decorations")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Service[]? Services { get; set; }
+        public Decoration[]? Decorations { get; set; }
 
         [JsonPropertyName("graph_points")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
