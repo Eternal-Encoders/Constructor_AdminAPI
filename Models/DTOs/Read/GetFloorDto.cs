@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Models.DTOs.Read
 {
@@ -39,9 +39,9 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonPropertyName("height")]
         public int Height { get; set; }
 
-        [BsonElement("service")]
-        [JsonPropertyName("service")]
-        public Service[]? Service { get; set; }
+        [BsonElement("decorations")]
+        [JsonPropertyName("decorations")]
+        public Decoration[]? Decorations { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]

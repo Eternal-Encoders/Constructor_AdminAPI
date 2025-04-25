@@ -9,13 +9,20 @@ namespace Constructor_API.Models.Entities
     public class PredefinedCategory : IAggregateRoot
     {
         [BsonId]
-        [JsonPropertyName("id")]
+        [JsonPropertyName("name")]
         [BsonElement("_id")]
         [BsonRepresentation(BsonType.String)]
-        public string? Id { get; set; }
+        [BsonRequired]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("displayable_name")]
+        [BsonElement("displayable_name")]
+        [BsonRequired]
+        public string? DisplayableName { get; set; }
 
         [BsonElement("description")]
         [JsonPropertyName("description")]
+        [BsonIgnoreIfNull]
         public string? Description { get; set; }
     }
 }

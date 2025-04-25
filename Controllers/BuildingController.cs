@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -80,13 +81,14 @@ namespace Constructor_API.Controllers
             if (!ObjectId.TryParse(id, out _)) return BadRequest(
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
+
 
             return Ok(building);
         }
@@ -104,13 +106,13 @@ namespace Constructor_API.Controllers
             if (!ObjectId.TryParse(id, out _)) return BadRequest(
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
 
             return Ok(floors);
         }
@@ -151,6 +153,53 @@ namespace Constructor_API.Controllers
             var buildings = await _buildingService.GetAllBuildings(CancellationToken.None);
 
             return Ok(buildings);
+        }
+
+        /// <summary>
+        /// Удаляет здание из БД
+        /// </summary>
+        /// <param name="id">ID здания, 24 символа</param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteBuilding(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _buildingService.DeleteBuilding(id, CancellationToken.None);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Обновляет тело здания
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <param name="buildingDto">Тело здания</param>
+        /// <returns></returns>
+        [HttpPatch("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateBuilding(string id, [FromBody] UpdateBuildingDto buildingDto)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _buildingService.UpdateBuilding(id, buildingDto, CancellationToken.None);
+
+            return Ok();
         }
     }
 }

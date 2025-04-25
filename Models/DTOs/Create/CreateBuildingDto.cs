@@ -3,7 +3,7 @@ using Constructor_API.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 using Constructor_API.Helpers.Attributes;
 using MongoDB.Bson.Serialization.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Models.DTOs.Create
 {

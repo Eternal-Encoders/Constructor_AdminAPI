@@ -3,7 +3,7 @@ using Constructor_API.Models.Entities;
 
 namespace Constructor_API.Core.Repositories
 {
-    public interface IFloorConnectionRepository : IRepository<FloorConnection>
+    public interface IFloorsTransitionRepository : IRepository<FloorsTransition>
     {
     }
 }

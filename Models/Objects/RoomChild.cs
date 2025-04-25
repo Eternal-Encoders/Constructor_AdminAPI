@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Constructor_API.Models.InnerObjects
+namespace Constructor_API.Models.Objects
 {
     public class RoomChild
     {

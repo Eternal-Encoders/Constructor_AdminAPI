@@ -1,5 +1,6 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
+using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,56 +8,68 @@ using MongoDB.Bson;
 
 namespace Constructor_API.Controllers
 {
-    [Route("floorConnection")]
+    [Route("floorsTransition")]
     [ApiController]
-    public class FloorConnectionController : ControllerBase
+    public class FloorsTransitionController : ControllerBase
     {
-        private readonly FloorConnectionService _floorConnectionService;
+        private readonly FloorsTransitionService _floorsTransitionService;
         private readonly IAuthorizationService _authorizationService;
 
-        public FloorConnectionController(FloorConnectionService floorConnectionService, IAuthorizationService authorizationService)
+        public FloorsTransitionController(FloorsTransitionService floorsTransitionService, IAuthorizationService authorizationService)
         {
-            _floorConnectionService = floorConnectionService;
+            _floorsTransitionService = floorsTransitionService;
             _authorizationService = authorizationService;
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetStairByGraphPoint([FromQuery] string? graphPointId)
-        //{
-        //    if (graphPointId == null) return BadRequest("Wrong input");
-
-        //    var stair = await _stairService.GetStairByGraphPoint(graphPointId, CancellationToken.None);
-        //    if (!stair.IsSuccessfull) return BadRequest(stair.GetErrors()[0]._message);
-
-        //    return Ok(stair.Value);
-        //}
-
         /// <summary>
-        /// Возвращает лестницу по ID
+        /// Добавляет переход между этажами в БД
         /// </summary>
-        /// <param name="id">ID лестницы, 24 символа</param>
+        /// <param name="transitionDto">Объект, представляющий собой переход</param>
         /// <returns></returns>
-        [HttpGet("{id}")]
+        [HttpPost]
         [Authorize]
-        public async Task<IActionResult> GetConnectionById(string id)
+        public async Task<IActionResult> InsertTransition([FromBody] CreateFloorsTransitionDto transitionDto)
         {
-            if (id == null) return BadRequest("Wrong input");
-            if (!ObjectId.TryParse(id, out _))
-                return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+            if (transitionDto == null) return BadRequest("Wrong input");
 
-            var fc = await _floorConnectionService.GetConnectionById(id, CancellationToken.None);
-
-            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorConnection");
+            var auth = await _authorizationService.AuthorizeAsync(User, transitionDto.BuildingId, "Building");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
 
+            await _floorsTransitionService.InsertTransition(transitionDto, CancellationToken.None);
+
+            return Created();
+        }
+
+        /// <summary>
+        /// Возвращает переход по ID
+        /// </summary>
+        /// <param name="id">ID перехода, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetTransitionById(string id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _))
+                return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorsTransition");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var fc = await _floorsTransitionService.GetTransitionById(id, CancellationToken.None);
+
+
             return Ok(fc);
         }
 
         /// <summary>
-        /// Возвращает массив лестниц по query-параметру
+        /// Возвращает массив переходов по query-параметру
         /// </summary>
         /// <param name="buildingName">Название здания</param>
         /// <returns></returns>
@@ -80,14 +93,14 @@ namespace Constructor_API.Controllers
         //}
 
         /// <summary>
-        /// Возвращает массив всех лестниц
+        /// Возвращает массив всех переходов
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
         [Authorize]
         public async Task<IActionResult> GetAllConnections()
         { 
-            var res = await _floorConnectionService.GetAllConnections(CancellationToken.None);
+            var res = await _floorsTransitionService.GetAllTransitions(CancellationToken.None);
 
             return Ok(res);
         }

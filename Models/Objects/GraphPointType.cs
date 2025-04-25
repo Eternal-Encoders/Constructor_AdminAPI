@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations;
 using Constructor_API.Models.DTOs;
 
-namespace Constructor_API.Models.InnerObjects
+namespace Constructor_API.Models.Objects
 {
     public class GraphPointType
     {

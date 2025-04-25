@@ -19,11 +19,19 @@ namespace Constructor_API.Infractructure
             ReadOnly = isReadOnly;
         }
 
+        public async Task AddCommand(Func<IClientSessionHandle, Task> func)
+        {
+            if (!ReadOnly)
+            {
+                await _dbContext.AddCommand(func);
+            }
+        }
+
         public override async Task AddAsync(TAggregateRoot aggregateRoot, CancellationToken cancellationToken)
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(async () => await DbCollection.InsertOneAsync(aggregateRoot));
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.InsertOneAsync(aggregateRoot));
             }
         }
 
@@ -31,7 +39,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(async () => await DbCollection.InsertManyAsync(aggregateRoots));
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.InsertManyAsync(aggregateRoots));
             }
         }
 
@@ -39,7 +47,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(async () => await DbCollection.DeleteOneAsync(predicate));
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.DeleteOneAsync(predicate));
             }
         }
 
@@ -47,7 +55,7 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(async () => await DbCollection.DeleteManyAsync(predicate));
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.DeleteManyAsync(predicate));
             }
         }
 
@@ -55,7 +63,15 @@ namespace Constructor_API.Infractructure
         {
             if (!ReadOnly)
             {
-                _dbContext.AddCommand(async () => await DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.ReplaceOneAsync(predicate, aggregateRoot));
+            }
+        }
+
+        public async Task PartialyUpdateAsync(Expression<Func<TAggregateRoot, bool>> predicate, BsonDocument document, CancellationToken cancellationToken)
+        {
+            if (!ReadOnly)
+            {
+                _dbContext.AddCommand(async (IClientSessionHandle s) => await DbCollection.UpdateOneAsync(predicate, document));
             }
         }
 

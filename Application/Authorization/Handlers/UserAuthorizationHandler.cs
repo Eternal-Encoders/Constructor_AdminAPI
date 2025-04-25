@@ -106,9 +106,9 @@ namespace Constructor_API.Application.Authorization.Handlers
                         break;
                     }
 
-                case "floorconnection":
+                case "floorstransition":
                     {
-                        if ((await _projectUserRepository.GetUsersForFloorConnection(id)).Any(i =>
+                        if ((await _projectUserRepository.GetUsersForFloorsTransition(id)).Any(i =>
                             i == userIdClaim.Value))
                         {
                             context.Succeed(requirement);

@@ -3,31 +3,14 @@ using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations;
 using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 using Constructor_API.Models.Entities;
 
 namespace Constructor_API.Models.DTOs.Create
 {
-    [PointType]
+    //[PointType]
     public class CreateGraphPointFromFloorDto
     {
-        //private static readonly Dictionary<string, GraphPointType> pointTypes = new Dictionary<string, GraphPointType>()
-        //{
-        //    ["corridor"] = new GraphPointType { "corridor" },
-        //    ["exit"] = "exit",
-        //    ["fire-exit"] = "fire-exit",
-        //    ["stair"] = "stair",
-        //    ["elevator"] = "elevator",
-        //    ["escalator"] = "escalator",
-        //    ["toilet-m"] = "toilet-m",
-        //    ["toilet-w"] = "toilet-w",
-        //    ["cafe"] = "cafe",
-        //    ["dinning"] = "dinning",
-        //    ["restaurant"] = "restaurant",
-        //    ["wardrobe"] = "wardrobe",
-        //    ["other"] = "other"
-        //};
-
         [JsonPropertyName("id")]
         [Required]
         [ObjectId]
@@ -45,36 +28,17 @@ namespace Constructor_API.Models.DTOs.Create
         [Required]
         public string[]? Links { get; set; }
 
-        //private string[]? types;
         [JsonPropertyName("types")]
         [Required]
         public string[]? Types { get; set; }
-        //{
-        //    get { return types; }
-        //    set
-        //    {
-        //        types = value;
-        //        types = types.Where(x => pointTypes.ContainsKey(x)).ToArray();
-        //    }
-        //}
 
-        //[JsonPropertyName("types")]
-        //[Required]
-        //public GraphPointType[]? Types { get; set; }
-
-        [JsonPropertyName("names")]
+        [JsonPropertyName("name")]
         [Required]
-        public string[]? Names { get; set; }
+        public string? Name { get; set; }
 
-        //[JsonPropertyName("floor")]
-        //[JsonRequired]
-        //[Required]
-        //public int Floor { get; set; }
-
-        //[JsonPropertyName("building")]
-        //[JsonRequired]
-        //[Required]
-        //public string Building { get; set; }
+        [JsonPropertyName("synonyms")]
+        [Required]
+        public string[]? Synonyms { get; set; }
 
         [JsonPropertyName("time")]
         //[BsonIgnoreIfNull]
@@ -87,12 +51,16 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("info")]
         public string? Info { get; set; }
 
-        [JsonPropertyName("is_pass_free")]
+        [JsonPropertyName("route_active")]
         [Required]
-        public bool? IsPassFree { get; set; }
+        public bool? RouteActive { get; set; }
+
+        [JsonPropertyName("search_active")]
+        [Required]
+        public bool? SearchActive { get; set; }
 
         [ObjectId]
-        [JsonPropertyName("connection_id")]
-        public string? ConnectionId { get; set; }
+        [JsonPropertyName("transition_id")]
+        public string? TransitionId { get; set; }
     }
 }

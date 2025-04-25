@@ -11,14 +11,14 @@ namespace Constructor_API.Application.Services
     public class GraphPointService
     {
         IGraphPointRepository _graphPointRepository;
-        IFloorConnectionRepository _floorConnectionRepository;
+        IFloorsTransitionRepository _floorConnectionRepository;
         IFloorRepository _floorRepository;
         IBuildingRepository _buildingRepository;
         IProjectRepository _projectRepository;
         IPredefinedGraphPointTypeRepository _predefinedGraphPointTypeRepository;
         IMapper _mapper;
 
-        public GraphPointService(IGraphPointRepository graphPointRepository, IFloorConnectionRepository floorConnectionRepository,
+        public GraphPointService(IGraphPointRepository graphPointRepository, IFloorsTransitionRepository floorConnectionRepository,
             IFloorRepository floorRepository, IMapper mapper, IBuildingRepository buildingRepository, 
             IProjectRepository projectRepository, IPredefinedGraphPointTypeRepository predefinedGraphPointTypeRepository)
         {
@@ -51,19 +51,19 @@ namespace Constructor_API.Application.Services
             await _floorRepository.UpdateAsync(f => f.Id == graphPointDto.FloorId, floor, cancellationToken);
 
             //Проверка на наличие id соединения между этажами у точки
-            if (graphPointDto.ConnectionId != null)
+            if (graphPointDto.TransitionId != null)
             {
                 //Поиск соединения по id
-                FloorConnection? connection = await _floorConnectionRepository.FirstOrDefaultAsync(s => s.Id == 
-                    graphPointDto.ConnectionId, cancellationToken);
+                FloorsTransition? connection = await _floorConnectionRepository.FirstOrDefaultAsync(s => s.Id == 
+                    graphPointDto.TransitionId, cancellationToken);
                 if (connection == null)
                 {
                     //Если не найдено, то создается новое
-                    var newConnection = new FloorConnection
+                    var newConnection = new FloorsTransition
                     {
-                        Id = graphPointDto.ConnectionId,
+                        Id = graphPointDto.TransitionId,
                         BuildingId = floor.BuildingId,
-                        Links = [graphPointDto.Id],
+                        LinkIds = [graphPointDto.Id],
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                     };
@@ -74,13 +74,13 @@ namespace Constructor_API.Application.Services
                     //Проверка на наличие ссылки 2-х точек на одном этаже на одно соединение
                     if (floor.GraphPoints.Any(g => g == graphPointDto.Id))
                         throw new AlreadyExistsException(
-                            $"There is more than 1 graph point with ConnectionId {graphPointDto.ConnectionId} " +
+                            $"There is more than 1 graph point with ConnectionId {graphPointDto.TransitionId} " +
                             $"on floor {floor.FloorNumber}");
 
                     //Если соединение найдено и ссылка на него одна, то id точки добавляется в его массив Links
-                    connection.Links ??= [];
-                    if (!connection.Links.Contains(graphPointDto.Id))
-                        connection.Links = [..connection.Links.Append(graphPointDto.Id)];
+                    connection.LinkIds ??= [];
+                    if (!connection.LinkIds.Contains(graphPointDto.Id))
+                        connection.LinkIds = [..connection.LinkIds.Append(graphPointDto.Id)];
                     connection.UpdatedAt = DateTime.UtcNow;
                     await _floorConnectionRepository.UpdateAsync(s => s.Id == connection.Id, connection, cancellationToken);
                 }
@@ -99,7 +99,7 @@ namespace Constructor_API.Application.Services
             foreach (string type in graphPoint.Types)
             {
                 //Если нет мреди предопределенных
-                if (!predefinedTypes.Any(t => t.Id == type))
+                if (!predefinedTypes.Any(t => t.Name == type))
                 {
                     //Проверяются пользовательские
                     if (project.CustomGraphPointTypes == null || !project.CustomGraphPointTypes.Any(t => t.Name == type))
@@ -130,12 +130,12 @@ namespace Constructor_API.Application.Services
             return graphPoints;
         }
 
-        public async Task<FloorConnection> GetFloorConnectionByGraphPoint(string id, CancellationToken cancellationToken)
+        public async Task<FloorsTransition> GetFloorConnectionByGraphPoint(string id, CancellationToken cancellationToken)
         {
             var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
             if (graphPoint == null) throw new NotFoundException($"Graph point is not found");
 
-            var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.ConnectionId,
+            var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.TransitionId,
                 cancellationToken);
             if (connection == null) throw new NotFoundException("Floor connection is not found");
 
@@ -156,11 +156,11 @@ namespace Constructor_API.Application.Services
             if (room != null) floor.Rooms = [..floor.Rooms.Where(r => r.Id != id)];
             floor.UpdatedAt = DateTime.UtcNow;
 
-            var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.ConnectionId,
+            var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.TransitionId,
                 cancellationToken);
-            if (connection != null && connection.Links != null)
+            if (connection != null && connection.LinkIds != null)
             {
-                connection.Links = [.. connection.Links.Where(g => g != id)];
+                connection.LinkIds = [.. connection.LinkIds.Where(g => g != id)];
                 connection.UpdatedAt = DateTime.UtcNow;
             }
 

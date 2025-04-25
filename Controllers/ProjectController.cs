@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -115,15 +116,61 @@ namespace Constructor_API.Controllers
             if (!ObjectId.TryParse(id, out _)) return BadRequest(
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var building = await _projectService.GetBuildingInProjectByName(id, name, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
 
+            var building = await _projectService.GetBuildingInProjectByName(id, name, CancellationToken.None);
+
+
             return Ok(building);
+        }
+
+        /// <summary>
+        /// Удаляет проект из БД
+        /// </summary>
+        /// <param name="id">Id проекта, 24 символа</param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteProject(string id)
+        {
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _projectService.DeleteProject(id, CancellationToken.None);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Обновляет поля проекта
+        /// </summary>
+        /// <param name="id">Id проекта, 24 символа</param>
+        /// <param name="projectDto">Тело проекта</param>
+        /// <returns></returns>
+        [HttpPatch("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProject([FromBody] UpdateProjectDto projectDto, string id)
+        {
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _projectService.UpdateProject(id, projectDto, CancellationToken.None);
+
+            return Ok();
         }
     }
 }

@@ -2,6 +2,7 @@
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -17,14 +18,17 @@ namespace Constructor_API.Application.Services
     public class UserService
     {
         readonly IUserRepository _userRepository;
+        readonly IProjectUserRepository _projectUserRepository;
         readonly IProjectRepository _projectRepository;
         readonly IConfiguration _configuration;
 
-        public UserService(IProjectRepository projectRepository, IUserRepository userRepository, IConfiguration configuration)
+        public UserService(IProjectRepository projectRepository, IUserRepository userRepository, IConfiguration configuration,
+            IProjectUserRepository projectuserRepository)
         {
             _projectRepository = projectRepository;
             _userRepository = userRepository;
             _configuration = configuration;
+            _projectUserRepository = projectuserRepository;
         }
 
         public async Task<string> GenerateToken(User user, CancellationToken cancellationToken)
@@ -62,7 +66,6 @@ namespace Constructor_API.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 FeatureIds = [],
-                ProjectUserIds = [],
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
             };
 
@@ -100,31 +103,49 @@ namespace Constructor_API.Application.Services
 
         public async Task<IReadOnlyList<Project>> GetProjectsByUser(string id, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
-            if (user == null) throw new NotFoundException("User not found");
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+                ?? throw new NotFoundException("User not found");
 
-            if (user.ProjectUserIds != null)
-            {
-                var projects = await _projectRepository.ListAsync(p => user.ProjectUserIds.Contains(p.Id), cancellationToken);
-                return projects;
-            }
-            else return [];
+            var projectUsers = await _projectUserRepository.ListAsync(pu => pu.UserId == id, cancellationToken);
+            var projects = await _projectRepository.ListAsync(p => projectUsers.Any(pu => pu.ProjectId == p.Id), cancellationToken);
+            return projects;
         }
 
-        public async Task<Project> GetUserProjectByName(string id, string name,
-            CancellationToken cancellationToken)
+        public async Task DeleteUser(string id, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
-            if (user == null) throw new NotFoundException("User not found");
-
-            if (user.ProjectUserIds != null)
-            {
-                var project = await _projectRepository.FirstOrDefaultAsync(p => user.ProjectUserIds.Contains(p.Id) && 
-                    p.Name == name, cancellationToken);
-                if (project == null) throw new NotFoundException("Project not found");
-                return project;
-            }
-            else throw new NotFoundException("Project not found");
+            await _userRepository.RemoveAsync(u => u.Id == id, cancellationToken);
+            await _userRepository.SaveChanges();
         }
+
+        public async Task UpdateUser(string id, UpdateUserDto userDto, CancellationToken cancellationToken)
+        {
+            var prevUser = await _userRepository.FirstAsync(u => u.Id == id, cancellationToken)
+                ?? throw new NotFoundException("User not found");
+
+            prevUser.Nickname = userDto.Nickname ?? prevUser.Nickname;
+            prevUser.Email = userDto.Email ?? prevUser.Email;
+            if (userDto.Password != null)
+                prevUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
+            prevUser.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.UpdateAsync(u => u.Id == id, prevUser, cancellationToken);
+            await _userRepository.SaveChanges();
+        }
+
+        //public async Task<Project> GetUserProjectByName(string id, string name,
+        //    CancellationToken cancellationToken)
+        //{
+        //    var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        //    if (user == null) throw new NotFoundException("User not found");
+
+        //    if (user.ProjectUserIds != null)
+        //    {
+        //        var project = await _projectRepository.FirstOrDefaultAsync(p => user.ProjectUserIds.Contains(p.Id) && 
+        //            p.Name == name, cancellationToken);
+        //        if (project == null) throw new NotFoundException("Project not found");
+        //        return project;
+        //    }
+        //    else throw new NotFoundException("Project not found");
+        //}
     }
 }

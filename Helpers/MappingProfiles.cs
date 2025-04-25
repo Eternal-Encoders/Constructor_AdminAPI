@@ -2,7 +2,7 @@
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Helpers
 {
@@ -24,6 +24,8 @@ namespace Constructor_API.Helpers
                 .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
 
+            CreateMap<GraphPoint, CreateGraphPointFromFloorDto>();
+
             CreateMap<CreateGraphPointDto, GraphPoint>()
                 .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
@@ -35,6 +37,9 @@ namespace Constructor_API.Helpers
             CreateMap<CreateProjectUserDto, ProjectUser>()
                 .ForMember(x => x.AddedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
+            CreateMap<CreateFloorsTransitionDto, FloorsTransition>()
+                .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
         }
     }
 }

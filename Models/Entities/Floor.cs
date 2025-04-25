@@ -4,7 +4,7 @@ using MongoDB.Bson;
 using System.Text.Json.Serialization;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System.ComponentModel.DataAnnotations;
-using Constructor_API.Models.InnerObjects;
+using Constructor_API.Models.Objects;
 using Constructor_API.Helpers.Attributes;
 
 namespace Constructor_API.Models.Entities
@@ -24,7 +24,7 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("floor_name")]
         [JsonPropertyName("floor_name")]
-        public int FloorName { get; set; }
+        public string FloorName { get; set; }
 
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
@@ -32,10 +32,20 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string BuildingId { get; set; }
 
-        [BsonElement("image_id")]
-        [JsonPropertyName("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string ImageId { get; set; }
+        [BsonIgnore]
+        public Building Building { get; set; }
+
+        [BsonElement("image_ids")]
+        [JsonPropertyName("image_ids")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        public string[]? ImageIds { get; set; }
+
+        //[BsonElement("images")]
+        //[JsonPropertyName("images")]
+        //[BsonIgnoreIfNull]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string[]? Images { get; set; }
 
         [BsonElement("width")]
         [JsonPropertyName("width")]
@@ -47,15 +57,15 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public int Height { get; set; }
 
-        [BsonElement("services")]
-        [JsonPropertyName("services")]
-        [BsonRequired]
-        public Service[] Services { get; set; }
+        [BsonElement("decorations")]
+        [JsonPropertyName("decorations")]
+        //[BsonRequired]
+        public Decoration[]? Decorations { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]
-        [BsonRequired]
-        public Room[] Rooms { get; set; }
+        //[BsonRequired]
+        public Room[]? Rooms { get; set; }
 
         [BsonElement("graph")]
         [JsonPropertyName("graph")]

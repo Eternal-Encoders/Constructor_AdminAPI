@@ -11,16 +11,16 @@ namespace Constructor_API.Helpers.Attributes
             if (value is CreateGraphPointFromFloorDto pointDto1)
                 //if (value is GraphPoint pointDto)
                 {
-                bool containsConnection = pointDto1.Types.Contains("stair") ||
-                    pointDto1.Types.Contains("elevator") || pointDto1.Types.Contains("escalator");
-                if (pointDto1.ConnectionId == null && containsConnection)
+                bool containsTransition = pointDto1.Types.Contains("Stair") ||
+                    pointDto1.Types.Contains("Lift") || pointDto1.Types.Contains("Escalator");
+                if (pointDto1.TransitionId == null && containsTransition)
                 {
                     //throw new ValidationException("Graph point has type \"stair\" but stair id is not specified");
                     ErrorMessage = "Graph point has type of floor connection category but connection id is not specified";
                     return false;
                 }
 
-                if (pointDto1.ConnectionId != null && !containsConnection)
+                if (pointDto1.TransitionId != null && !containsTransition)
                 {
                     //throw new ValidationException("Graph point has stair id but type \"stair\" is not specified");
                     ErrorMessage = "Graph point has connection id but type of floor connection is not specified";
@@ -41,16 +41,16 @@ namespace Constructor_API.Helpers.Attributes
             if (value is CreateGraphPointDto pointDto2)
             //if (value is GraphPoint pointDto)
             {
-                bool containsConnection = pointDto2.Types.Contains("stair") ||
-                    pointDto2.Types.Contains("elevator") || pointDto2.Types.Contains("escalator");
-                if (pointDto2.ConnectionId == null && containsConnection)
+                bool containsTransition = pointDto2.Types.Contains("Stair") ||
+                    pointDto2.Types.Contains("Lift") || pointDto2.Types.Contains("Escalator");
+                if (pointDto2.TransitionId == null && containsTransition)
                 {
                     //throw new ValidationException("Graph point has type \"stair\" but stair id is not specified");
                     ErrorMessage = "Graph point has type of floor connection category but connection id is not specified";
                     return false;
                 }
 
-                if (pointDto2.ConnectionId != null && !containsConnection)
+                if (pointDto2.TransitionId != null && !containsTransition)
                 {
                     //throw new ValidationException("Graph point has stair id but type \"stair\" is not specified");
                     ErrorMessage = "Graph point has connection id but type of floor connection is not specified";

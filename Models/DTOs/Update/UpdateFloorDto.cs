@@ -1,58 +1,53 @@
 ﻿using Constructor_API.Helpers.Attributes;
-using Constructor_API.Models.Entities;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
+using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.Objects;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Constructor_API.Models.Objects;
 
-namespace Constructor_API.Models.DTOs.Create
+namespace Constructor_API.Models.DTOs.Update
 {
-    public class CreateFloorDto
+    public class UpdateFloorDto
     {
         [JsonPropertyName("floor_number")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? FloorNumber { get; set; }
 
         [JsonPropertyName("floor_name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? FloorName { get; set; }
 
         [JsonPropertyName("building_id")]
-        [Required]
         [ObjectId]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? BuildingId { get; set; }
 
         [JsonPropertyName("image_ids")]
         [ObjectId]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string[]? ImageIds { get; set; }
 
         [JsonPropertyName("width")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Width { get; set; }
 
         [JsonPropertyName("height")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Height { get; set; }
 
-        //Пройдет ли пустой массив?
         [JsonPropertyName("decorations")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Decoration[]? Decorations { get; set; }
 
         [JsonPropertyName("graph_points")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public CreateGraphPointFromFloorDto[]? GraphPoints { get; set; }
 
         [JsonPropertyName("rooms")]
-        [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Room[]? Rooms { get; set; }
 
-        //[JsonPropertyName("graph")]
-        //public GraphPointFromFloorDto[]? GraphPoints { get; set; }
-
         [JsonPropertyName("forces")]
-        //[Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Forces[]? Forces { get; set; }
     }
 }

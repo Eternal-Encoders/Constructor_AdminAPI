@@ -30,9 +30,12 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string PasswordHash { get; set; }
 
-        [BsonElement("project_users")]
-        [JsonPropertyName("project_users")]
-        public string[] ProjectUserIds { get; set; }
+        //[BsonElement("project_users")]
+        //[JsonPropertyName("project_users")]
+        //public string[] ProjectUserIds { get; set; }
+
+        [BsonIgnore]
+        public ProjectUser[]? ProjectUsers { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
@@ -46,6 +49,7 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("paid_feature_id")]
         [JsonPropertyName("paid_feature_id")]
-        public string[] FeatureIds { get; set; }
+        [BsonIgnoreIfNull]
+        public string[]? FeatureIds { get; set; }
     }
 }

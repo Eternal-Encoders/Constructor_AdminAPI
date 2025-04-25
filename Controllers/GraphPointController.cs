@@ -70,13 +70,13 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var res = await _graphPointService.GetGraphPointById(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "GraphPoint");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var res = await _graphPointService.GetGraphPointById(id, CancellationToken.None);
 
             return Ok(res);
         }
@@ -93,13 +93,13 @@ namespace Constructor_API.Controllers
             if (id == null) return BadRequest("Wrong input");
             if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var res = await _graphPointService.GetFloorConnectionByGraphPoint(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "GraphPoint");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            var res = await _graphPointService.GetFloorConnectionByGraphPoint(id, CancellationToken.None);
 
             return Ok(res);
         }

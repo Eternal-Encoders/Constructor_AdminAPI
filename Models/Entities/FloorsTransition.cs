@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Entities
 {
-    public class FloorConnection : IAggregateRoot
+    public class FloorsTransition : IAggregateRoot
     {
         [BsonId]
         [BsonElement("_id")]
@@ -17,6 +17,11 @@ namespace Constructor_API.Models.Entities
         [Required]
         public string? Id { get; set; }
 
+        [BsonElement("name")]
+        [JsonPropertyName("name")]
+        [Required]
+        public string? Name { get; set; }
+
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
         [Required]
@@ -24,10 +29,18 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string? BuildingId { get; set; }
 
+        //[BsonIgnore]
+        //public Building? Building { get; set; }
+
         [BsonElement("links")]
         [JsonPropertyName("links")]
         [Required]
-        public string[]? Links { get; set; }
+        public string[]? LinkIds { get; set; }
+
+        //[BsonIgnore]
+        //[JsonPropertyName("links")]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //public GraphPoint[]? Links { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
