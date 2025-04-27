@@ -19,13 +19,28 @@ using Microsoft.OpenApi.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
+//using static System.Net.Mime.MediaTypeNames;
 
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 //Добавление файла конфигурации
 builder.Configuration.AddEnvironmentVariables();
+
+var testOrigins = "testOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: testOrigins,
+                      policy =>
+                      {
+                          policy
+                          .AllowAnyOrigin()
+                          //.WithOrigins(builder.Configuration["TestOrigins"])
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                          //.AllowCredentials();
+                      });
+});
 
 
 builder.Services.AddControllers()
@@ -136,6 +151,8 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+app.UseCors(testOrigins);
+
 app.UseExceptionHandler(builder =>
 {
     builder.Run(async context =>
@@ -186,4 +203,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.Run("http://0.0.0.0:60018");
