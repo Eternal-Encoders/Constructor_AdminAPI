@@ -1,8 +1,0 @@
-{
-  "ConnectionStrings": {
-    "Server": "mongodb://127.0.0.1:27017/?retryWrites=true&w=majority&appName=Test&replicaSet=set0",
-    "DatabaseName": "Constr-Admin-Test"
-  },
-  //"SECRET": "secretsecretsecretsecretsecret11",
-  "ExpireHours": 12
-}
