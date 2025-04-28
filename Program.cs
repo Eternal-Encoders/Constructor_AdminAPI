@@ -35,7 +35,8 @@ builder.Services.AddCors(options =>
                       {
                           policy
                           .AllowAnyOrigin()
-                          //.WithOrigins(builder.Configuration["TestOrigins"])
+                          //.WithOrigins(builder.Configuration["TestOrigin1"],
+                          //    builder.Configuration["TestOrigin2"])
                           .AllowAnyMethod()
                           .AllowAnyHeader();
                           //.AllowCredentials();
@@ -196,11 +197,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run("http://0.0.0.0:60018");
+app.Run();
