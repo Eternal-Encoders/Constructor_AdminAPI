@@ -17,28 +17,31 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("floor_number")]
-        [JsonPropertyName("floor_number")]
+        [BsonElement("number")]
+        [JsonPropertyName("number")]
         [BsonRequired]
         public int FloorNumber { get; set; }
 
-        [BsonElement("floor_name")]
-        [JsonPropertyName("floor_name")]
+        [BsonElement("name")]
+        [JsonPropertyName("name")]
         public string FloorName { get; set; }
 
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonRequired]
+        [ObjectId]
         public string BuildingId { get; set; }
 
         [BsonIgnore]
-        public Building Building { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Building? Building { get; set; }
 
         [BsonElement("image_ids")]
         [JsonPropertyName("image_ids")]
+        [ObjectId]
         //[BsonRepresentation(BsonType.ObjectId)]
-        public string[]? ImageIds { get; set; }
+        public string[] ImageIds { get; set; }
 
         //[BsonElement("images")]
         //[JsonPropertyName("images")]
@@ -60,16 +63,17 @@ namespace Constructor_API.Models.Entities
         [BsonElement("decorations")]
         [JsonPropertyName("decorations")]
         //[BsonRequired]
-        public Decoration[]? Decorations { get; set; }
+        public Decoration[] Decorations { get; set; }
 
         [BsonElement("rooms")]
         [JsonPropertyName("rooms")]
         //[BsonRequired]
-        public Room[]? Rooms { get; set; }
+        public Room[] Rooms { get; set; }
 
         [BsonElement("graph")]
         [JsonPropertyName("graph")]
         [BsonRequired]
+        [ObjectId]
         public string[] GraphPoints { get; set; }
 
         [BsonElement("forces")]

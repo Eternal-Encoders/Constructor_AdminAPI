@@ -44,11 +44,11 @@ namespace Constructor_API.Models.Entities
         [BsonElement("description")]
         public string? Description { get; set; }
 
-        [ObjectId]
-        [JsonPropertyName("image_id")]
-        [BsonElement("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? ImageId { get; set; }
+        //[ObjectId]
+        //[JsonPropertyName("image_id")]
+        //[BsonElement("image_id")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string? ImageId { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

@@ -37,30 +37,54 @@ namespace Constructor_API.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _projectService.InsertProject(projectDto, userId, CancellationToken.None);
-            return Created();
+            var project = await _projectService.InsertProject(projectDto, userId, CancellationToken.None);
+            return Ok(project);
         }
 
+        ///// <summary>
+        ///// Возвращает проект по ID
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <returns></returns>
+        //[HttpGet("{id}")]
+        //[Authorize]
+        //public async Task<IActionResult> GetProjectById(string? id)
+        //{
+        //    var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
+        //    if (!auth.Succeeded)
+        //    {
+        //        return Forbid();
+        //    }
+
+        //    if (id == null) return BadRequest("Wrong input");
+        //    if (!ObjectId.TryParse(id, out _)) return BadRequest(
+        //        "Wrong input: specified ID is not a valid 24 digit hex string");
+
+        //    var project = await _projectService.GetProjectById(id, CancellationToken.None);
+
+        //    return Ok(project);
+        //}
+
         /// <summary>
-        /// Возвращает проект по ID
+        /// Возвращает базовую информацию о проекте по ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("{id}")]
+        [HttpGet("{id}/info")]
         [Authorize]
-        public async Task<IActionResult> GetProjectById(string? id)
+        public async Task<IActionResult> GetProjectInfoById(string? id)
         {
-            if (id == null) return BadRequest("Wrong input");
-            if (!ObjectId.TryParse(id, out _)) return BadRequest(
-                "Wrong input: specified ID is not a valid 24 digit hex string");
-
-            var project = await _projectService.GetProjectById(id, CancellationToken.None);
-
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
             if (!auth.Succeeded)
             {
                 return Forbid();
             }
+
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var project = await _projectService.GetProjectInfoById(id, CancellationToken.None);
 
             return Ok(project);
         }
@@ -79,7 +103,7 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает все здания в проекте
+        /// Возвращает краткую информацию обо всех зданиях в проекте
         /// </summary>
         /// <param name="id">ID проекта, 24 символа</param>
         /// <returns></returns>

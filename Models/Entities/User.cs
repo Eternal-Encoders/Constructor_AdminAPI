@@ -17,8 +17,8 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("nickname")]
         [JsonPropertyName("nickname")]
-        [BsonRequired]
-        public string Nickname { get; set; }
+        //[BsonRequired]
+        public string? Nickname { get; set; }
 
         [BsonElement("email")]
         [JsonPropertyName("email")]
@@ -34,8 +34,10 @@ namespace Constructor_API.Models.Entities
         //[JsonPropertyName("project_users")]
         //public string[] ProjectUserIds { get; set; }
 
-        [BsonIgnore]
-        public ProjectUser[]? ProjectUsers { get; set; }
+        //[BsonElement("project_users")]
+        //[JsonPropertyName("project_users")]
+        //[BsonIgnoreIfNull]
+        //public ProjectUser[]? ProjectUsers { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

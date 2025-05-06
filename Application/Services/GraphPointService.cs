@@ -34,15 +34,12 @@ namespace Constructor_API.Application.Services
         public async Task InsertGraphPoint(CreateGraphPointDto graphPointDto, CancellationToken cancellationToken)
         {
             //Проверка на повтор точки по id
-            if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPointDto.Id, cancellationToken) != null)
+            if (await _graphPointRepository.CountAsync(g => g.Id == graphPointDto.Id, cancellationToken) != 0)
                 throw new AlreadyExistsException($"Graph point {graphPointDto.Id} already exists");
 
             //Этаж, полученный из dto точки
-            Floor? floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == graphPointDto.FloorId, cancellationToken);
-
-            //Проверка на наличие этажа по id
-            if (floor == null)
-                throw new NotFoundException($"Floor {graphPointDto.FloorId} is not found");
+            Floor floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == graphPointDto.FloorId, cancellationToken) 
+                ?? throw new NotFoundException($"Floor {graphPointDto.FloorId} is not found");
 
             //В массив id точек в этаже добавляется новая точка
             floor.GraphPoints ??= [];
@@ -117,39 +114,29 @@ namespace Constructor_API.Application.Services
 
         public async Task<GraphPoint> GetGraphPointById(string id, CancellationToken cancellationToken)
         {
-            var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
-            if (graphPoint == null) throw new NotFoundException($"Graph point is not found");
-
-            return graphPoint;
+            return await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken)
+                ?? throw new NotFoundException($"Graph point is not found");
         }
 
         public async Task<IReadOnlyList<GraphPoint>> GetAllGraphPoints(CancellationToken cancellationToken)
         {
-            var graphPoints = await _graphPointRepository.ListAsync(cancellationToken);
-
-            return graphPoints;
+            return await _graphPointRepository.ListAsync(cancellationToken);
         }
 
         public async Task<FloorsTransition> GetFloorConnectionByGraphPoint(string id, CancellationToken cancellationToken)
         {
-            var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
-            if (graphPoint == null) throw new NotFoundException($"Graph point is not found");
-
-            var connection = await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.TransitionId,
-                cancellationToken);
-            if (connection == null) throw new NotFoundException("Floor connection is not found");
-
-            return connection;
+            var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken)
+                ?? throw new NotFoundException($"Graph point is not found");
+            return await _floorConnectionRepository.FirstOrDefaultAsync(c => c.Id == graphPoint.TransitionId,
+                cancellationToken) ?? throw new NotFoundException("Floor connection is not found");
         }
 
         public async Task DeleteGraphPoint(string id, CancellationToken cancellationToken)
         {
-            var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
-            if (graphPoint == null) throw new NotFoundException("Graph point is not found");
-
-            var floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == graphPoint.FloorId, cancellationToken);
-            if (floor == null) throw new NotFoundException("Floor is not found");
-
+            var graphPoint = await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Graph point is not found");
+            var floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == graphPoint.FloorId, cancellationToken)
+                ?? throw new NotFoundException("Floor is not found");
             floor.GraphPoints = [..floor.GraphPoints.Where(g => g != id)];
 
             var room = floor.Rooms.FirstOrDefault(r => r.Id == id);

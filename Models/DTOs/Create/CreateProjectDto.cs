@@ -13,8 +13,8 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [JsonPropertyName("image")]
-        public CreateImageDto? Image { get; set; }
+        //[JsonPropertyName("image")]
+        //public CreateImageDto? Image { get; set; }
 
         //[Required]
         //[JsonPropertyName("creator_id")]

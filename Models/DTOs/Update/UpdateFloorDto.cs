@@ -8,11 +8,11 @@ namespace Constructor_API.Models.DTOs.Update
 {
     public class UpdateFloorDto
     {
-        [JsonPropertyName("floor_number")]
+        [JsonPropertyName("number")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? FloorNumber { get; set; }
 
-        [JsonPropertyName("floor_name")]
+        [JsonPropertyName("name")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? FloorName { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Constructor_API.Core.Repositories;
 using Constructor_API.Core.Shared;
+using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
 using MongoDB.Driver;
 using System.Linq.Expressions;
@@ -20,6 +21,44 @@ namespace Constructor_API.Infractructure.Repositories
             floorCollection = dbContext.GetCollection<Floor>(typeof(Floor).Name);
             graphPointCollection = dbContext.GetCollection<GraphPoint>(typeof(GraphPoint).Name);
             floorConnectionCollection = dbContext.GetCollection<FloorsTransition>(typeof(FloorsTransition).Name);
+        }
+
+        public async Task<GetProjectDto?> FirstGetProjectDtoOrDefaultAsync(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
+        {
+            var project = await DbCollection
+                .Find(predicate)
+                .Project(p => new GetProjectDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Url = p.Url,
+                    Description = p.Description,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                })
+                .FirstOrDefaultAsync();
+
+            if (project != null)
+                project.BuildingNames = [..await buildingCollection
+                        .Find(b => b.ProjectId == project.Id)
+                        .Project(b => b.Name)
+                        .ToListAsync() ?? []];
+
+            return project;
+        }
+
+        public async Task<GetProjectDto[]> SimpleGetProjectDtoListAsync(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
+        {
+            var projects = await DbCollection
+                .Find(predicate)
+                .Project(p => new GetProjectDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                })
+                .ToListAsync();
+
+            return [..projects];
         }
 
         public async Task<Project?> FirstOrDefaultAsyncJoined(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)

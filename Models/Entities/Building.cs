@@ -14,6 +14,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("_id")]
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         public string Id { get; set; }
 
         [BsonElement("project_id")]
@@ -40,6 +41,7 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("floor_ids")]
         [JsonPropertyName("floor_ids")]
+        [ObjectId]
         [BsonRequired]
         public string[]? FloorIds { get; set; }
 
@@ -66,6 +68,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("image_id")]
         [JsonPropertyName("image_id")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         public string? ImageId { get; set; }
 
         [BsonElement("gps")]
@@ -86,6 +89,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("updated_by")]
         [JsonPropertyName("updated_by")]
         [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         public string? UpdatedBy { get; set; }
     }
 }

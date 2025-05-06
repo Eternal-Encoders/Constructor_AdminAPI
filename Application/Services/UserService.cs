@@ -2,6 +2,7 @@
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -43,19 +44,18 @@ namespace Constructor_API.Application.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
             };
 
-            var token = new JwtSecurityToken(
+            return new JwtSecurityTokenHandler().WriteToken(
+                new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(Convert.ToDouble(_configuration["ExpireHours"])),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                signingCredentials: creds));
         }
 
         public async Task<string> RegisterUser(CreateUserDto userDto, CancellationToken cancellationToken)
         {
-            if ((await _userRepository.FirstOrDefaultAsync(u => u.Email == userDto.Email, cancellationToken)) != null)
+            if ((await _userRepository.CountAsync(u => u.Email == userDto.Email, cancellationToken)) != 0)
                 throw new AlreadyExistsException($"User with email {userDto.Email} already exists");
-            if ((await _userRepository.FirstOrDefaultAsync(u => u.Nickname == userDto.Nickname, cancellationToken)) != null)
+            if ((await _userRepository.CountAsync(u => u.Nickname == userDto.Nickname, cancellationToken)) != 0)
                 throw new AlreadyExistsException($"User with nickname {userDto.Nickname} already exists");
 
             var user = new User
@@ -77,9 +77,8 @@ namespace Constructor_API.Application.Services
 
         public async Task<string> Login(LoginUserDto userDto, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Email == userDto.Email, cancellationToken);
-            if (user == null)
-                throw new NotFoundException($"User with email {userDto.Email} is not found");
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Email == userDto.Email, cancellationToken)
+                ?? throw new NotFoundException($"User with email {userDto.Email} is not found");
             if (!BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
                 //NotAuthorizedException
                 throw new Exception($"Wrong password");
@@ -89,26 +88,22 @@ namespace Constructor_API.Application.Services
 
         public async Task<IReadOnlyList<User>> GetAllUsers(CancellationToken cancellationToken)
         {
-            var users = await _userRepository.ListAsync(cancellationToken);
-            return users;
+            return await _userRepository.ListAsync(cancellationToken);
         }
 
         public async Task<User> GetUserById(string id, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
-            if (user == null) throw new NotFoundException("User not found");
-
-            return user;
+            return await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+                ?? throw new NotFoundException("User not found");
         }
 
-        public async Task<IReadOnlyList<Project>> GetProjectsByUser(string id, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<GetProjectDto>> GetProjectsByUser(string id, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
-                ?? throw new NotFoundException("User not found");
+            if (await _userRepository.CountAsync(u => u.Id == id, cancellationToken) == 0)
+                throw new NotFoundException("User not found");
 
-            var projectUsers = await _projectUserRepository.ListAsync(pu => pu.UserId == id, cancellationToken);
-            var projects = await _projectRepository.ListAsync(p => projectUsers.Any(pu => pu.ProjectId == p.Id), cancellationToken);
-            return projects;
+            var projectIds = (await _projectUserRepository.ListAsync(pu => pu.UserId == id, cancellationToken)).Select(x => x.ProjectId);
+            return await _projectRepository.SimpleGetProjectDtoListAsync(p => projectIds.Any(id => id == p.Id), cancellationToken);
         }
 
         public async Task DeleteUser(string id, CancellationToken cancellationToken)

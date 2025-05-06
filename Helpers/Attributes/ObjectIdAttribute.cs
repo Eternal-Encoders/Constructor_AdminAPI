@@ -18,7 +18,17 @@ namespace Constructor_API.Helpers.Attributes
                     return false;
                 }
             }
-
+            else if (value is string[] ids)
+            {
+                foreach (var i in ids)
+                {
+                    if (!ObjectId.TryParse(i, out _))
+                    {
+                        ErrorMessage = "Wrong input: specified ID is not a valid 24 digit hex string";
+                        return false;
+                    }
+                }
+            }
             return true;
         }
     }
