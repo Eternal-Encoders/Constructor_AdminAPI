@@ -18,13 +18,18 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string Name { get; set; }
 
-        [BsonElement("url")]
-        [JsonPropertyName("url")]
-        public string? Url { get; set; }
+        [BsonElement("mime_type")]
+        [JsonPropertyName("mime_type")]
+        [BsonRequired]
+        public string MimeType { get; set; }
+
+        //[BsonElement("url")]
+        //[JsonPropertyName("url")]
+        //public string? Url { get; set; }
 
         [BsonElement("filesize")]
         [JsonPropertyName("filesize")]
-        public string? Filesize { get; set; }
+        public long Filesize { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

@@ -35,6 +35,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("links")]
         [JsonPropertyName("links")]
         [Required]
+        [ObjectId]
         public string[]? LinkIds { get; set; }
 
         //[BsonIgnore]

@@ -4,7 +4,7 @@ using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
+//using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System.Threading;
@@ -41,8 +41,8 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
-            return Created();
+            var building = await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
+            return Ok(building);
         }
 
         //Пример заполнения:
@@ -94,7 +94,7 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает все этажи в здании
+        /// Возвращает краткую информацию обо всех этажах в здании
         /// </summary>
         /// <param name="id">ID здания, 24 символа</param>
         /// <returns></returns>
@@ -112,7 +112,7 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            var floors = await _buildingService.GetFloorsByBuildingWithGraphPoints(id, CancellationToken.None);
+            var floors = await _buildingService.GetSimpleFloorsByBuilding(id, CancellationToken.None);
 
             return Ok(floors);
         }

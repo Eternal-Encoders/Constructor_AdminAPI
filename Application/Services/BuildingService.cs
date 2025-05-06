@@ -30,7 +30,7 @@ namespace Constructor_API.Application.Services
             _floorConnectionRepository = floorConnectionRepository;
         }
 
-        public async Task InsertBuilding(CreateBuildingDto buildingDto, CancellationToken cancellationToken)
+        public async Task<Building> InsertBuilding(CreateBuildingDto buildingDto, CancellationToken cancellationToken)
         {
             var building = _mapper.Map<Building>(buildingDto);
             building.Id = ObjectId.GenerateNewId().ToString();
@@ -50,20 +50,24 @@ namespace Constructor_API.Application.Services
 
             await _buildingRepository.AddAsync(building, cancellationToken);
             await _buildingRepository.SaveChanges();
-        }
-
-        public async Task<Building> GetBuildingById(string id, CancellationToken cancellationToken)
-        {
-            var building = await _buildingRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            if (building == null) throw new NotFoundException("Building is not found");
 
             return building;
         }
 
+        public async Task<GetBuildingDto> GetBuildingById(string id, CancellationToken cancellationToken)
+        {
+            return await _buildingRepository.FirstGetBuildingDtoOrDefaultAsync(b => b.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Building is not found");
+        }
+
         public async Task<IReadOnlyList<Floor>> GetFloorsByBuilding(string buildingId, CancellationToken cancellationToken)
         {
-            var res = await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
-            return res;
+            return await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<GetFloorDto>> GetSimpleFloorsByBuilding(string buildingId, CancellationToken cancellationToken)
+        {
+            return await _floorRepository.SimpleGetFloorDtoByBuildingListAsync(f => f.BuildingId == buildingId, cancellationToken);
         }
 
         public async Task<IReadOnlyList<GetFloorDto>> GetFloorsByBuildingWithGraphPoints(string buildingId,
@@ -72,7 +76,7 @@ namespace Constructor_API.Application.Services
             var floors = await _floorRepository.ListAsync(f => f.BuildingId == buildingId, cancellationToken);
             List<GetFloorDto> res = [];
 
-            for(int i = 0; i < floors.Count; i++)
+            for (int i = 0; i < floors.Count; i++)
             {
                 res.Add(_mapper.Map<GetFloorDto>(floors[i]));
 
@@ -100,30 +104,24 @@ namespace Constructor_API.Application.Services
 
         public async Task<Floor> GetFloorInBuildingByNumber(string buildingId, int number, CancellationToken cancellationToken)
         {
-            var res = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
-                f.FloorNumber == number, cancellationToken);
-            if (res == null) throw new NotFoundException("Floor is not found");
-            return res;
+            return await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
+                f.FloorNumber == number, cancellationToken) ?? throw new NotFoundException("Floor is not found");
         }
 
         public async Task<GetFloorDto> GetFloorInBuildingByNumberWithGraphPoints(string buildingId,
             int number, CancellationToken cancellationToken)
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
-                f.FloorNumber == number, cancellationToken);
-            if (floor == null) throw new NotFoundException($"Floor is not found");
-
+                f.FloorNumber == number, cancellationToken) ?? throw new NotFoundException($"Floor is not found");
             var res = _mapper.Map<GetFloorDto>(floor);
-            res.GraphPoints = (await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken))
-                    .ToArray();
+            res.GraphPoints = [..await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken)];
 
             return res;
         }
 
         public async Task<IReadOnlyList<Building>> GetAllBuildings(CancellationToken cancellationToken)
         {
-            var buildings = await _buildingRepository.ListAsync(cancellationToken);
-            return buildings;
+            return await _buildingRepository.ListAsync(cancellationToken);
         }
 
         public async Task DeleteBuilding(string buildingId, CancellationToken cancellationToken)

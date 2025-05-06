@@ -26,6 +26,7 @@ namespace Constructor_API.Models.DTOs.Create
 
         [JsonPropertyName("links")]
         [Required]
+        [ObjectId]
         public string[]? Links { get; set; }
 
         [JsonPropertyName("types")]

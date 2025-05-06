@@ -34,15 +34,11 @@ namespace Constructor_API.Application.Services
                 var startBuilding= await _buildingService.GetBuildingById(startFloor.BuildingId,
                     CancellationToken.None);
                 if (startBuilding == null)
-                {
                     throw new NotFoundException($"Building {startFloor.BuildingId} is not found");
-                }
                 var endBuilding = await _buildingService.GetBuildingById(endFloor.BuildingId,
                     CancellationToken.None);
                 if (endBuilding == null)
-                {
                     throw new NotFoundException($"Building {endFloor.BuildingId} is not found");
-                }
 
                 if (endBuilding.ProjectId != startBuilding.ProjectId)
                     throw new Exception($"Buildings {startBuilding.Id} and {endBuilding.Id} are from different projects");

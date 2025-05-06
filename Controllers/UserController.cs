@@ -63,6 +63,21 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
+        /// Возвращает список краткой информации о проектах пользователя
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("projects")]
+        [Authorize]
+        public async Task<IActionResult> GetProjectsByUser()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            return Ok(await _userService.GetProjectsByUser(userId, CancellationToken.None));
+        }
+
+        /// <summary>
         /// Удаляет пользователя
         /// </summary>
         /// <returns></returns>
@@ -94,16 +109,5 @@ namespace Constructor_API.Controllers
 
             return Ok();
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        //[HttpGet("projects")]
-        //[Authorize]
-        //public async Task<IActionResult> GetProjectsByUser()
-        //{
-        //    _userService.GetProjectsByUser(User.FindFirstValue(ClaimTypes.NameIdentifier), CancellationToken.None);
-        //}
     }
 }

@@ -12,5 +12,28 @@ namespace Constructor_API.Infractructure.Repositories
         public GraphPointMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
         }
+
+        public async Task<CreateGraphPointFromFloorDto[]?> CreateGraphPointsFromFloorListAsync(string floorId)
+        {
+
+            return [.. await DbCollection
+                .Find(gp => gp.FloorId == floorId)
+                .Project(gp => new CreateGraphPointFromFloorDto
+                {
+                    Id = gp.Id,
+                    X = gp.X,
+                    Y = gp.Y,
+                    Links = gp.Links,
+                    Types = gp.Types,
+                    Name = gp.Name,
+                    Synonyms = gp.Synonyms,
+                    Time = gp.Time,
+                    Description = gp.Description,
+                    Info = gp.Info,
+                    RouteActive = gp.RouteActive,
+                    TransitionId = gp.TransitionId
+                })
+                .ToListAsync()];
+        }
     }
 }

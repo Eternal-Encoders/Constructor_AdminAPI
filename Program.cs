@@ -1,25 +1,22 @@
 using Constructor_API.Application.Authorization.Handlers;
 using Constructor_API.Application.Authorization.Requirements;
+using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Core.Repositories;
+using Constructor_API.Core.Shared.S3;
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Infractructure;
 using Constructor_API.Infractructure.Repositories;
-using Constructor_API.Models.Entities;
 using DotNetEnv;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Minio;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
-//using static System.Net.Mime.MediaTypeNames;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +45,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
         var serializerOptions = opt.JsonSerializerOptions;
-        serializerOptions.IgnoreNullValues = true;
+        //serializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         serializerOptions.IgnoreReadOnlyProperties = false;
         serializerOptions.WriteIndented = true;
     });
@@ -87,8 +84,16 @@ builder.Services.AddSwaggerGen(opt =>
 });
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Services.AddSingleton<IMinioClient>(new MinioClient()
+    .WithEndpoint(builder.Configuration["S3Endpoint"])
+    .WithCredentials(builder.Configuration["S3Access"], builder.Configuration["S3Secret"])
+    .WithSSL(false)
+    .Build());
+builder.Services.AddScoped<IS3Storage, MinioS3Storage>();
+
 builder.Services.AddScoped<MongoDBContext>();
 
+builder.Services.AddScoped<IImageRepository, ImageMongoRepository>();
 builder.Services.AddScoped<IBuildingRepository, BuildingMongoRepository>();
 builder.Services.AddScoped<IFloorRepository, FloorMongoRepository>();
 builder.Services.AddScoped<IGraphPointRepository, GraphPointMongoRepository>();
@@ -99,6 +104,7 @@ builder.Services.AddScoped<IPredefinedCategoryRepository, PredefinedCategoryMong
 builder.Services.AddScoped<IUserRepository, UserMongoRepository>();
 builder.Services.AddScoped<IProjectUserRepository, ProjectUserMongoRepository>();
 
+builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<FloorsTransitionService>();
 builder.Services.AddScoped<GraphPointService>();
 builder.Services.AddScoped<FloorService>();
@@ -121,6 +127,8 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false;
     //options.RequireHttpsMetadata = true;
     options.SaveToken = true;
+    //if (builder.Configuration["Secret"] == null)
+    //    throw new Exception("Environment value \"Secret\" is empty");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -152,6 +160,8 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+app.UseRouting();
+
 app.UseCors(testOrigins);
 
 app.UseExceptionHandler(builder =>
@@ -159,7 +169,7 @@ app.UseExceptionHandler(builder =>
     builder.Run(async context =>
     {
         var err = context.Features.Get<IExceptionHandlerFeature>().Error;
-        context.Response.ContentType = "application/problem+json";
+        context.Response.ContentType = "application/text";
         //err.
 
         if (err is ValidationException valException)
@@ -197,11 +207,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
+//app.Run("http://0.0.0.0:60018");
 app.Run();

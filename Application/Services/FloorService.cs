@@ -169,186 +169,215 @@ namespace Constructor_API.Application.Services
             return graphIdsDict;
         }
 
-        public async Task InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
+        public async Task<Floor> InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
         {
             //Проверка на повтор этажа
-            if (await _floorRepository.FirstOrDefaultAsync(f =>
-                f.BuildingId == floorDto.BuildingId && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != null)
+                if (await _floorRepository.CountAsync(f =>
+                    f.BuildingId == floorDto.BuildingId && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != 0)
                 throw new AlreadyExistsException("Floor already exists");
             //Дата и время
             DateTime now = DateTime.UtcNow;
-
             //Проверка на наличие здания
             var building = await _buildingRepository.FirstOrDefaultAsync(b =>
                b.Id == floorDto.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
-            //Проверка на наличие проекта
-            var project = await _projectRepository.FirstOrDefaultAsync(p =>
-                p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
-            //Проверка на наличие dto точек графа, если нет, то ставится пустой массив
-            CreateGraphPointFromFloorDto[] graphPointDtos = floorDto.GraphPoints ?? [];
-
-            //Словарь для id точек и их связей
-            Dictionary<string, string[]> graphIdsDict = [];
-            //Лист для обновленных и новых переходов
-            List<FloorsTransition> updatedTransitions = [];
-            List<FloorsTransition> createdTransitions = [];
-            //Массив для точек
-            GraphPoint[] graphPoints = new GraphPoint[graphPointDtos.Length];
-
             //Маппинг этажа, заполнение полей
             Floor floor = _mapper.Map<Floor>(floorDto);
             floor.Id = ObjectId.GenerateNewId().ToString();
-            floor.Rooms ??= [];
+            floor.Rooms = [];
+            floor.GraphPoints = [];
+            floor.Decorations = [];
+            floor.Width = 0;
+            floor.Height = 0;
+            floor.ImageIds = [];
             //Обновление здания, добавление в него этажа
             if (building.FloorIds == null)
                 building.FloorIds = [floor.Id];
             else
                 building.FloorIds = [.. building.FloorIds.Append(floor.Id)];
             await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
-
-            //Поиск предопределенных типов
-            var predefinedTypes = await _predefinedGraphPointTypeRepository.ListAsync(cancellationToken);
-
-            //Валидация комнат и проходов
-            var valRoomRes = await ValidateRooms(floor.Rooms, project.CustomGraphPointTypes, graphPointDtos, graphIdsDict, cancellationToken);
-            graphIdsDict = valRoomRes.Item1;
-            floor.Rooms = valRoomRes.Item2;
-
-            foreach (var room in floor.Rooms)
-            {
-                room.CreatedAt = now;
-                room.UpdatedAt = now;
-                if (room.Passages != null)
-                    foreach (var pass in room.Passages)
-                    {
-                        pass.CreatedAt = now;
-                        pass.UpdatedAt = now;
-                    }
-            }
-
-            //Работа с каждой точкой
-            for (int i = 0; i < graphPointDtos.Length; i++)
-            {
-                //Проверка на наличие точки в БД
-                if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == graphPointDtos[i].Id, cancellationToken) != null)
-                    throw new AlreadyExistsException($"Graph point with ID {graphPointDtos[i].Id} already exists");
-
-                //Проверка на повторное добавление по id
-                if (graphPoints.FirstOrDefault(g => g.Id == graphPointDtos[i].Id) != null)
-                    throw new AlreadyExistsException($"Graph point ID {graphPointDtos[i].Id} repeats");
-
-                //Маппинг точки, заполнение полей
-                GraphPoint gp = _mapper.Map<GraphPoint>(graphPointDtos[i]);
-                gp.FloorId = floor.Id;
-
-                //Проверка типов
-                ValidateTypes(gp, predefinedTypes, project.CustomGraphPointTypes);
-
-                //Проверка связей
-                graphIdsDict = ValidateLinks(gp, graphIdsDict, graphPointDtos);
-
-                //Заполнение массивов
-                graphPoints[i] = gp;
-
-                //Проверка на наличие id перехода
-                if (gp.TransitionId == null) continue;
-
-                //Проверка на наличие перехода в БД
-                FloorsTransition? transition = await _floorsTransitionRepository.FirstOrDefaultAsync(z => 
-                    z.Id == gp.TransitionId, cancellationToken);
-
-                //Если его нет
-                if (transition == null)
-                {
-                    //Поиск перехода в массиве для созданных переходов
-                    var transitionForCreation = createdTransitions.FirstOrDefault(c => c.Id == gp.TransitionId);
-                    //Если его нет, то создается новый
-                    if (transitionForCreation == null)
-                    {
-                        var newTransition = new FloorsTransition
-                        {
-                            Id = gp.TransitionId,
-                            BuildingId = building.Id,
-                            LinkIds = [gp.Id],
-                            CreatedAt = now,
-                            UpdatedAt = now,
-                        };
-                        createdTransitions.Add(newTransition);
-                    }
-                    //Если есть, то выбрасывается исключение, так как переход только между разными этажами
-                    else
-                    {
-                        throw new AlreadyExistsException(
-                            $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
-                    }
-                }
-                //Если переход есть в БД
-                else
-                {
-                    //Поиск перехода в массиве для созданных связей
-                    var transitionForUpdate = updatedTransitions.FirstOrDefault(c => c.Id == transition.Id);
-                    //Если его нет
-                    if (transitionForUpdate == null)
-                    {
-                        if (transition.LinkIds == null) 
-                            transition.LinkIds = [gp.Id];
-                        else
-                            transition.LinkIds = [.. transition.LinkIds.Append(gp.Id)];
-                        transition.UpdatedAt = DateTime.UtcNow;
-                        updatedTransitions.Add(transition);
-                    }
-                    //Если он есть, то выбрасывается исключение
-                    else
-                    {
-                        throw new AlreadyExistsException(
-                            $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
-                    }
-                }
-            }
-
-            //Добавление и обновление переходов
-            if (createdTransitions.Count > 0)
-                await _floorsTransitionRepository.AddRangeAsync(createdTransitions, cancellationToken);
-
-            foreach (var update in updatedTransitions)
-            {
-                await _floorsTransitionRepository.UpdateAsync(s => s.Id == update.Id,
-                    update, cancellationToken);
-            }
-
-            floor.GraphPoints = [..graphIdsDict.Keys];
-            //floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
+            floor.CreatedAt = now;
+            floor.UpdatedAt = now;
 
             await _floorRepository.AddAsync(floor, cancellationToken);
-            if (graphPoints.Length > 0)
-                await _graphPointRepository.AddRangeAsync([..graphPoints], cancellationToken);
-
             await _floorsTransitionRepository.SaveChanges();
+
+            return floor;
         }
+
+
+        //public async Task InsertFloor(CreateFloorDto floorDto, CancellationToken cancellationToken)
+        //{
+        //    //Проверка на повтор этажа
+        //    if (await _floorRepository.CountAsync(f =>
+        //        f.BuildingId == floorDto.BuildingId && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != 0)
+        //        throw new AlreadyExistsException("Floor already exists");
+        //    //Дата и время
+        //    DateTime now = DateTime.UtcNow;
+
+        //    //Проверка на наличие здания
+        //    var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+        //       b.Id == floorDto.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
+        //    //Проверка на наличие проекта
+        //    var project = await _projectRepository.FirstOrDefaultAsync(p =>
+        //        p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
+        //    //Проверка на наличие dto точек графа, если нет, то ставится пустой массив
+        //    CreateGraphPointFromFloorDto[] graphPointDtos = floorDto.GraphPoints ?? [];
+
+        //    //Словарь для id точек и их связей
+        //    Dictionary<string, string[]> graphIdsDict = [];
+        //    //Лист для обновленных и новых переходов
+        //    List<FloorsTransition> updatedTransitions = [];
+        //    List<FloorsTransition> createdTransitions = [];
+        //    //Массив для точек
+        //    GraphPoint[] graphPoints = new GraphPoint[graphPointDtos.Length];
+
+        //    //Маппинг этажа, заполнение полей
+        //    Floor floor = _mapper.Map<Floor>(floorDto);
+        //    floor.Id = ObjectId.GenerateNewId().ToString();
+        //    floor.Rooms ??= [];
+        //    //Обновление здания, добавление в него этажа
+        //    if (building.FloorIds == null)
+        //        building.FloorIds = [floor.Id];
+        //    else
+        //        building.FloorIds = [.. building.FloorIds.Append(floor.Id)];
+        //    await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+
+        //    //Поиск предопределенных типов
+        //    var predefinedTypes = await _predefinedGraphPointTypeRepository.ListAsync(cancellationToken);
+
+        //    //Валидация комнат и проходов
+        //    var valRoomRes = await ValidateRooms(floor.Rooms, project.CustomGraphPointTypes, graphPointDtos, graphIdsDict, cancellationToken);
+        //    graphIdsDict = valRoomRes.Item1;
+        //    floor.Rooms = valRoomRes.Item2;
+
+        //    foreach (var room in floor.Rooms)
+        //    {
+        //        room.CreatedAt = now;
+        //        room.UpdatedAt = now;
+        //        if (room.Passages != null)
+        //            foreach (var pass in room.Passages)
+        //            {
+        //                pass.CreatedAt = now;
+        //                pass.UpdatedAt = now;
+        //            }
+        //    }
+
+        //    //Работа с каждой точкой
+        //    for (int i = 0; i < graphPointDtos.Length; i++)
+        //    {
+        //        //Проверка на наличие точки в БД
+        //        if (await _graphPointRepository.CountAsync(g => g.Id == graphPointDtos[i].Id, cancellationToken) != 0)
+        //            throw new AlreadyExistsException($"Graph point with ID {graphPointDtos[i].Id} already exists");
+
+        //        //Проверка на повторное добавление по id
+        //        if (graphPoints.Count(g => g.Id == graphPointDtos[i].Id) != 0)
+        //            throw new AlreadyExistsException($"Graph point ID {graphPointDtos[i].Id} repeats");
+
+        //        //Маппинг точки, заполнение полей
+        //        GraphPoint gp = _mapper.Map<GraphPoint>(graphPointDtos[i]);
+        //        gp.FloorId = floor.Id;
+
+        //        //Проверка типов
+        //        ValidateTypes(gp, predefinedTypes, project.CustomGraphPointTypes);
+
+        //        //Проверка связей
+        //        graphIdsDict = ValidateLinks(gp, graphIdsDict, graphPointDtos);
+
+        //        //Заполнение массивов
+        //        graphPoints[i] = gp;
+
+        //        //Проверка на наличие id перехода
+        //        if (gp.TransitionId == null) continue;
+
+        //        //Проверка на наличие перехода в БД
+        //        FloorsTransition? transition = await _floorsTransitionRepository.FirstOrDefaultAsync(z => 
+        //            z.Id == gp.TransitionId, cancellationToken);
+
+        //        //Если его нет
+        //        if (transition == null)
+        //        {
+        //            //Если нет перехода в массиве для созданных переходов, то создается новый
+        //            if (!createdTransitions.Any(c => c.Id == gp.TransitionId))
+        //            {
+        //                var newTransition = new FloorsTransition
+        //                {
+        //                    Id = gp.TransitionId,
+        //                    BuildingId = building.Id,
+        //                    LinkIds = [gp.Id],
+        //                    CreatedAt = now,
+        //                    UpdatedAt = now,
+        //                };
+        //                createdTransitions.Add(newTransition);
+        //            }
+        //            //Если есть, то выбрасывается исключение, так как переход только между разными этажами
+        //            else
+        //            {
+        //                throw new AlreadyExistsException(
+        //                    $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
+        //            }
+        //        }
+        //        //Если переход есть в БД
+        //        else
+        //        {
+        //            //Поиск перехода в массиве для созданных связей
+        //            //Если его нет
+        //            if (!updatedTransitions.Any(c => c.Id == transition.Id))
+        //            {
+        //                if (transition.LinkIds == null) 
+        //                    transition.LinkIds = [gp.Id];
+        //                else
+        //                    transition.LinkIds = [.. transition.LinkIds.Append(gp.Id)];
+        //                transition.UpdatedAt = DateTime.UtcNow;
+        //                updatedTransitions.Add(transition);
+        //            }
+        //            //Если он есть, то выбрасывается исключение
+        //            else
+        //            {
+        //                throw new AlreadyExistsException(
+        //                    $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
+        //            }
+        //        }
+        //    }
+
+        //    //Добавление и обновление переходов
+        //    if (createdTransitions.Count > 0)
+        //        await _floorsTransitionRepository.AddRangeAsync(createdTransitions, cancellationToken);
+
+        //    foreach (var update in updatedTransitions)
+        //    {
+        //        await _floorsTransitionRepository.UpdateAsync(s => s.Id == update.Id,
+        //            update, cancellationToken);
+        //    }
+
+        //    floor.GraphPoints = [..graphIdsDict.Keys];
+        //    //floor.Rooms = floorDto.Rooms == null ? [] : floorDto.Rooms.Values.ToArray();
+
+        //    await _floorRepository.AddAsync(floor, cancellationToken);
+        //    if (graphPoints.Length > 0)
+        //        await _graphPointRepository.AddRangeAsync([..graphPoints], cancellationToken);
+
+        //    await _floorRepository.SaveChanges();
+        //}
 
         public async Task<IReadOnlyList<Floor>> GetAllFloors(CancellationToken cancellationToken)
         {
-            var res = await _floorRepository.ListAsync(cancellationToken);
-            return res;
+            return await _floorRepository.ListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyList<GraphPoint>> GetGraphPointsByFloor(string id, CancellationToken cancellationToken)
         {
-            if (await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken) == null)
+            if (await _floorRepository.CountAsync(b => b.Id == id, cancellationToken) == 0)
                 throw new NotFoundException("Floor is not found");
-
-            var res = await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken);
-            return res;
+            return await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken);
         }
 
         public async Task<IReadOnlyList<FloorsTransition>> GetStairsByFloor(string id, CancellationToken cancellationToken)
         {
-            if (await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken) == null)
+            if (await _floorRepository.CountAsync(b => b.Id == id, cancellationToken) == 0)
                 throw new NotFoundException("Floor is not found");
 
-            var graphPoints = await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken);
-            if (graphPoints == null) throw new NotFoundException("Graph points are not found");
-
+            var graphPoints = await _graphPointRepository.ListAsync(g => g.FloorId == id, cancellationToken)
+                ?? throw new NotFoundException("Graph points are not found");
             var stairIds = new List<string>();
             var res = new List<FloorsTransition>();
 
@@ -359,8 +388,8 @@ namespace Constructor_API.Application.Services
 
             foreach (var stairId in stairIds)
             {
-                var stair = await _floorsTransitionRepository.FirstAsync(s => s.Id == stairId, cancellationToken);
-                if (stair == null) throw new NotFoundException($"Stair with id {stairId} is not found");
+                var stair = await _floorsTransitionRepository.FirstAsync(s => s.Id == stairId, cancellationToken)
+                    ?? throw new NotFoundException($"Stair with id {stairId} is not found");
                 res.Add(stair);
             }
 
@@ -369,10 +398,8 @@ namespace Constructor_API.Application.Services
 
         public async Task<Floor> GetFloorById(string id, CancellationToken cancellationToken)
         {
-            var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            if (floor == null) throw new NotFoundException("Floor is not found");
-
-            return floor;
+            return await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Floor is not found");
         }
 
         public async Task<GetFloorDto> GetFloorByIdWithGraphPoints(string id,
@@ -412,8 +439,8 @@ namespace Constructor_API.Application.Services
 
         public async Task UpdateFloor(string id, UpdateFloorDto floorDto, CancellationToken cancellationToken)
         {
-            var prevFloor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
-            if (prevFloor == null) throw new NotFoundException("Floor is not found");
+            var prevFloor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Floor is not found");
             //Проверка на наличие здания
             var building = await _buildingRepository.FirstOrDefaultAsync(b =>
                b.Id == prevFloor.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
@@ -430,8 +457,8 @@ namespace Constructor_API.Application.Services
                 project = await _projectRepository.FirstOrDefaultAsync(p =>
                     p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
 
-                if (_floorRepository.FirstOrDefaultAsync(f => f.FloorNumber == floorDto.FloorNumber &&
-                    f.BuildingId == floorDto.BuildingId, cancellationToken) != null)
+                if (await _floorRepository.CountAsync(f => f.FloorNumber == floorDto.FloorNumber &&
+                    f.BuildingId == floorDto.BuildingId, cancellationToken) != 0)
                     throw new AlreadyExistsException(
                         $"Floor in building {floorDto.BuildingId} with number {floorDto.FloorNumber} already exists");
                 else
@@ -471,7 +498,7 @@ namespace Constructor_API.Application.Services
                         floorDto.GraphPoints, graphIdsDict, cancellationToken);
                 else
                     roomTuple = await ValidateRooms(floorDto.Rooms, project.CustomGraphPointTypes,
-                        await _floorRepository.GraphPointsFromFloorListAsync(id), graphIdsDict, cancellationToken);
+                        await _graphPointRepository.CreateGraphPointsFromFloorListAsync(id), graphIdsDict, cancellationToken);
 
 
                 foreach (var room in floorDto.Rooms)
@@ -561,9 +588,8 @@ namespace Constructor_API.Application.Services
                     if (transition == null)
                     {
                         //Поиск перехода в массиве для созданных переходов
-                        var transitionForCreation = createdTransitions.FirstOrDefault(c => c.Id == gp.TransitionId);
                         //Если его нет, то создается новый
-                        if (transitionForCreation == null)
+                        if (!createdTransitions.Any(c => c.Id == gp.TransitionId))
                         {
                             var newTransition = new FloorsTransition
                             {
@@ -610,7 +636,7 @@ namespace Constructor_API.Application.Services
 
                 foreach (var gpDto in gpDtoForInsert)
                 {
-                    if (await _graphPointRepository.FirstOrDefaultAsync(g => g.Id == gpDto.Id, cancellationToken) != null)
+                    if (await _graphPointRepository.CountAsync(g => g.Id == gpDto.Id, cancellationToken) != 0)
                         throw new AlreadyExistsException($"Graph point with ID {gpDto.Id} already exists");
                     GraphPoint gp = _mapper.Map<GraphPoint>(gpDto);
                     gp.FloorId = prevFloor.Id;
@@ -634,9 +660,8 @@ namespace Constructor_API.Application.Services
                     if (transition == null)
                     {
                         //Поиск перехода в массиве для созданных переходов
-                        var transitionForCreation = createdTransitions.FirstOrDefault(c => c.Id == gp.TransitionId);
                         //Если его нет, то создается новый
-                        if (transitionForCreation == null)
+                        if (!createdTransitions.Any(c => c.Id == gp.TransitionId))
                         {
                             var newTransition = new FloorsTransition
                             {

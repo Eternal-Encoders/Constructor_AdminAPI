@@ -1,42 +1,45 @@
 ﻿using AutoMapper;
 using Constructor_API.Core.Repositories;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
 using MongoDB.Driver;
+using System.Linq.Expressions;
 
 namespace Constructor_API.Infractructure.Repositories
 {
     public class FloorMongoRepository : MongoRepository<Floor>, IFloorRepository
     {
-        readonly IMongoCollection<GraphPoint> graphPointCollection;
-
         public FloorMongoRepository(MongoDBContext dbContext) : base(dbContext, false)
         {
-            graphPointCollection = dbContext.GetCollection<GraphPoint>(typeof(GraphPoint).Name);
         }
 
-        public async Task<CreateGraphPointFromFloorDto[]?> GraphPointsFromFloorListAsync(string floorId)
+        public async Task<FloorForPathDto?> FirstFloorForPathDtoOrDefaultAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken)
         {
-            var graphPoints = await graphPointCollection
-                .Find(gp => gp.FloorId == floorId)
-                .Project(gp => new CreateGraphPointFromFloorDto
+            return await DbCollection
+                .Find(predicate)
+                .Project(f => new FloorForPathDto
                 {
-                    Id = gp.Id,
-                    X = gp.X,
-                    Y = gp.Y,
-                    Links = gp.Links,
-                    Types = gp.Types,
-                    Name = gp.Name,
-                    Synonyms = gp.Synonyms,
-                    Time = gp.Time,
-                    Description = gp.Description,
-                    Info = gp.Info,
-                    RouteActive = gp.RouteActive,
-                    TransitionId = gp.TransitionId
+                    Id = f.Id,
+                    FloorNumber = f.FloorNumber,
+                    GraphPoints = null
                 })
-                .ToListAsync();
+                .FirstOrDefaultAsync();
+        }
 
-            return [.. graphPoints];
+        public async Task<GetFloorDto[]> SimpleGetFloorDtoByBuildingListAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken)
+        {
+            var floors = await DbCollection
+                .Find(predicate)
+                .Project(f => new GetFloorDto
+                {
+                    Id = f.Id,
+                    FloorNumber = f.FloorNumber,
+                    FloorName = f.FloorName,
+                })
+                .ToListAsync() ?? [];
+
+            return [.. floors];
         }
     }
 }
