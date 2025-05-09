@@ -67,6 +67,7 @@ namespace Constructor_API.Application.Services
                 UpdatedAt = DateTime.UtcNow,
                 FeatureIds = [],
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
+                SelectedProject ="",
             };
 
             var token = await GenerateToken(user, cancellationToken);

@@ -38,12 +38,6 @@ namespace Constructor_API.Infractructure.Repositories
                 })
                 .FirstOrDefaultAsync();
 
-            if (project != null)
-                project.BuildingNames = [..await buildingCollection
-                        .Find(b => b.ProjectId == project.Id)
-                        .Project(b => b.Name)
-                        .ToListAsync() ?? []];
-
             return project;
         }
 
@@ -61,35 +55,14 @@ namespace Constructor_API.Infractructure.Repositories
             return [..projects];
         }
 
-        public async Task<Project?> FirstOrDefaultAsyncJoined(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
-        {
-            Project? project = await base.FirstOrDefaultAsync(predicate, cancellationToken);
-            if (project == null) return project;
-            else
-            {
-                project.ProjectUsers = [..await projectUserCollection.Find(u => u.ProjectId == project.Id).ToListAsync()];
-                return project;
-            }
-        }
+        //public override async Task AddAsync(Project aggregateRoot, CancellationToken cancellationToken)
+        //{
+        //    ProjectUser[]? projectUsers = aggregateRoot.ProjectUsers;
+        //    aggregateRoot.ProjectUsers = null;
+        //    await base.AddAsync(aggregateRoot, cancellationToken);
 
-        public async Task<IReadOnlyList<Project>> ListAsyncJoined(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
-        {
-            var projects = await base.ListAsync(predicate, cancellationToken);
-            foreach (var project in projects)
-            {
-                project.ProjectUsers = [.. await projectUserCollection.Find(u => u.ProjectId == project.Id).ToListAsync()];
-            }
-            return projects;
-        }
-
-        public override async Task AddAsync(Project aggregateRoot, CancellationToken cancellationToken)
-        {
-            ProjectUser[]? projectUsers = aggregateRoot.ProjectUsers;
-            aggregateRoot.ProjectUsers = null;
-            await base.AddAsync(aggregateRoot, cancellationToken);
-
-            await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.InsertManyAsync(projectUsers));
-        }
+        //    await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.InsertManyAsync(projectUsers));
+        //}
 
         public override async Task RemoveAsync(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken)
         {

@@ -10,12 +10,12 @@ namespace Constructor_API.Models.DTOs.Create
 {
     public class CreateFloorDto
     {
-        [JsonPropertyName("number")]
+        [JsonPropertyName("index")]
         [Required]
-        public int? FloorNumber { get; set; }
+        public int? Index { get; set; }
 
         [JsonPropertyName("name")]
-        public string? FloorName { get; set; }
+        public string? Name { get; set; }
 
         [JsonPropertyName("building_id")]
         [Required]

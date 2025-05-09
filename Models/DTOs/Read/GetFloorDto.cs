@@ -16,13 +16,13 @@ namespace Constructor_API.Models.DTOs.Read
         [ObjectId]
         public string Id { get; set; }
 
-        [BsonElement("number")]
-        [JsonPropertyName("number")]
-        public int FloorNumber { get; set; }
+        [BsonElement("index")]
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
 
         [BsonElement("name")]
         [JsonPropertyName("name")]
-        public string? FloorName { get; set; }
+        public string? Name { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [BsonElement("building_id")]

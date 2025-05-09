@@ -1,6 +1,5 @@
 using Constructor_API.Application.Authorization.Handlers;
 using Constructor_API.Application.Authorization.Requirements;
-using Constructor_API.Application.Result;
 using Constructor_API.Application.Services;
 using Constructor_API.Core.Repositories;
 using Constructor_API.Core.Shared.S3;
@@ -59,7 +58,6 @@ builder.Services.AddSwaggerGen(opt =>
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        //Description = "Please enter token in format \"bearer *token*\"",
         Description = "Please enter token",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
@@ -89,6 +87,7 @@ builder.Services.AddSingleton<IMinioClient>(new MinioClient()
     .WithCredentials(builder.Configuration["S3Access"], builder.Configuration["S3Secret"])
     .WithSSL(false)
     .Build());
+
 builder.Services.AddScoped<IS3Storage, MinioS3Storage>();
 
 builder.Services.AddScoped<MongoDBContext>();

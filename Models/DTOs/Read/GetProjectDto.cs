@@ -10,7 +10,7 @@ namespace Constructor_API.Models.DTOs.Read
     {
         [BsonId]
         [JsonPropertyName("id")]
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -20,18 +20,8 @@ namespace Constructor_API.Models.DTOs.Read
         public string? Url { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("buildings")]
-        public string[]? BuildingNames { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("description")]
         public string? Description { get; set; }
-
-        //[ObjectId]
-        //[JsonPropertyName("image_id")]
-        //[BsonElement("image_id")]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        //public string? ImageId { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("created_at")]

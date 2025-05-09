@@ -9,6 +9,6 @@ namespace Constructor_API.Core.Repositories
     public interface IFloorRepository : IRepository<Floor>
     {
         Task<GetFloorDto[]> SimpleGetFloorDtoByBuildingListAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken);
-        Task<FloorForPathDto?> FirstFloorForPathDtoOrDefaultAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken);
+        Task<FloorForPathDto[]> FloorForPathDtoListAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken);
     }
 }

@@ -173,7 +173,7 @@ namespace Constructor_API.Application.Services
         {
             //Проверка на повтор этажа
                 if (await _floorRepository.CountAsync(f =>
-                    f.BuildingId == floorDto.BuildingId && f.FloorNumber == floorDto.FloorNumber, cancellationToken) != 0)
+                    f.BuildingId == floorDto.BuildingId && f.Index == floorDto.Index, cancellationToken) != 0)
                 throw new AlreadyExistsException("Floor already exists");
             //Дата и время
             DateTime now = DateTime.UtcNow;
@@ -457,32 +457,32 @@ namespace Constructor_API.Application.Services
                 project = await _projectRepository.FirstOrDefaultAsync(p =>
                     p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
 
-                if (await _floorRepository.CountAsync(f => f.FloorNumber == floorDto.FloorNumber &&
+                if (await _floorRepository.CountAsync(f => f.Index == floorDto.Index &&
                     f.BuildingId == floorDto.BuildingId, cancellationToken) != 0)
                     throw new AlreadyExistsException(
-                        $"Floor in building {floorDto.BuildingId} with number {floorDto.FloorNumber} already exists");
+                        $"Floor in building {floorDto.BuildingId} with number {floorDto.Index} already exists");
                 else
                 {
-                    if (floorDto.FloorNumber != null && floorDto.FloorNumber != prevFloor.FloorNumber)
+                    if (floorDto.Index != null && floorDto.Index != prevFloor.Index)
                     {
-                        prevFloor.FloorNumber = (int)floorDto.FloorNumber;
+                        prevFloor.Index = (int)floorDto.Index;
                         prevFloor.BuildingId = floorDto.BuildingId;
                     }
                 }
             }
-            else if (floorDto.FloorNumber != null && floorDto.FloorNumber != prevFloor.FloorNumber)
+            else if (floorDto.Index != null && floorDto.Index != prevFloor.Index)
             {
-                var floorForExchange = await _floorRepository.FirstOrDefaultAsync(f => f.FloorNumber == floorDto.FloorNumber &&
+                var floorForExchange = await _floorRepository.FirstOrDefaultAsync(f => f.Index == floorDto.Index &&
                     f.BuildingId == floorDto.BuildingId, cancellationToken);
                 if (floorForExchange != null)
                 {
-                    floorForExchange.FloorNumber = prevFloor.FloorNumber;
+                    floorForExchange.Index = prevFloor.Index;
                     await _floorRepository.UpdateAsync(f => f.Id == floorForExchange.Id, floorForExchange, cancellationToken);
-                    prevFloor.FloorNumber = (int)floorDto.FloorNumber;
+                    prevFloor.Index = (int)floorDto.Index;
                 }
             }
 
-            prevFloor.FloorName = floorDto.FloorName ?? prevFloor.FloorName;
+            prevFloor.Name = floorDto.Name ?? prevFloor.Name;
             prevFloor.ImageIds = floorDto.ImageIds;
             prevFloor.Width = floorDto.Width ?? prevFloor.Width;
             prevFloor.Height = floorDto.Height ?? prevFloor.Height;
@@ -605,7 +605,7 @@ namespace Constructor_API.Application.Services
                         else
                         {
                             throw new AlreadyExistsException(
-                                $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
+                                $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.Index}");
                         }
                     }
                     //Если переход есть в БД
@@ -677,7 +677,7 @@ namespace Constructor_API.Application.Services
                         else
                         {
                             throw new AlreadyExistsException(
-                                $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.FloorNumber}");
+                                $"There is more than 1 graph point with transition_id {gp.TransitionId} on floor {floorDto.Index}");
                         }
                     }
                     //Если переход есть в БД
@@ -752,7 +752,7 @@ namespace Constructor_API.Application.Services
                             s.Id == transition.Id, transition, cancellationToken);
                     //Иначе исключение
                     else throw new AlreadyExistsException(
-                        $"There is more than 1 graph point with transition_id {transition.Id} on floor {floorDto.FloorNumber}");
+                        $"There is more than 1 graph point with transition_id {transition.Id} on floor {floorDto.Index}");
                 }
 
                 //Добавление и обновление точек

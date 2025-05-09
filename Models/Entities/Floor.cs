@@ -17,14 +17,14 @@ namespace Constructor_API.Models.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("number")]
-        [JsonPropertyName("number")]
+        [BsonElement("index")]
+        [JsonPropertyName("index")]
         [BsonRequired]
-        public int FloorNumber { get; set; }
+        public int Index { get; set; }
 
         [BsonElement("name")]
         [JsonPropertyName("name")]
-        public string FloorName { get; set; }
+        public string Name { get; set; }
 
         [BsonElement("building_id")]
         [JsonPropertyName("building_id")]

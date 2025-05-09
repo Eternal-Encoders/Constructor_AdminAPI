@@ -1,5 +1,4 @@
-﻿using Constructor_API.Application.Result;
-using Constructor_API.Application.Services;
+﻿using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
@@ -41,38 +40,14 @@ namespace Constructor_API.Controllers
             return Ok(project);
         }
 
-        ///// <summary>
-        ///// Возвращает проект по ID
-        ///// </summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //[HttpGet("{id}")]
-        //[Authorize]
-        //public async Task<IActionResult> GetProjectById(string? id)
-        //{
-        //    var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
-        //    if (!auth.Succeeded)
-        //    {
-        //        return Forbid();
-        //    }
-
-        //    if (id == null) return BadRequest("Wrong input");
-        //    if (!ObjectId.TryParse(id, out _)) return BadRequest(
-        //        "Wrong input: specified ID is not a valid 24 digit hex string");
-
-        //    var project = await _projectService.GetProjectById(id, CancellationToken.None);
-
-        //    return Ok(project);
-        //}
-
         /// <summary>
-        /// Возвращает базовую информацию о проекте по ID
+        /// Возвращает информацию о проекте по ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("{id}/info")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetProjectInfoById(string? id)
+        public async Task<IActionResult> GetProjectById(string? id)
         {
             var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
             if (!auth.Succeeded)
@@ -84,13 +59,15 @@ namespace Constructor_API.Controllers
             if (!ObjectId.TryParse(id, out _)) return BadRequest(
                 "Wrong input: specified ID is not a valid 24 digit hex string");
 
-            var project = await _projectService.GetProjectInfoById(id, CancellationToken.None);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var project = await _projectService.GetProjectById(id, userId, CancellationToken.None);
 
             return Ok(project);
         }
 
         /// <summary>
-        /// Возвращает все проекты
+        /// Возвращает все проекты, тестовый запрос
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
@@ -127,32 +104,6 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает здание в проекте по его названию
-        /// </summary>
-        /// <param name="id">ID проекта, 24 символа</param>
-        /// <param name="name">Название здания</param>
-        /// <returns></returns>
-        [HttpGet("{id}/building/{name}")]
-        [Authorize]
-        public async Task<IActionResult> GetBuildingInProjectByName(string? id, string? name)
-        {
-            if (id == null || name == null) return BadRequest("Wrong input");
-            if (!ObjectId.TryParse(id, out _)) return BadRequest(
-                "Wrong input: specified ID is not a valid 24 digit hex string");
-
-            var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
-            if (!auth.Succeeded)
-            {
-                return Forbid();
-            }
-
-            var building = await _projectService.GetBuildingInProjectByName(id, name, CancellationToken.None);
-
-
-            return Ok(building);
-        }
-
-        /// <summary>
         /// Удаляет проект из БД
         /// </summary>
         /// <param name="id">Id проекта, 24 символа</param>
@@ -169,7 +120,8 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            await _projectService.DeleteProject(id, CancellationToken.None);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _projectService.DeleteProject(id, userId, CancellationToken.None);
 
             return Ok();
         }
