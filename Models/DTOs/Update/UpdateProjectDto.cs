@@ -10,23 +10,21 @@ namespace Constructor_API.Models.DTOs.Update
     {
         [BsonElement("name")]
         [JsonPropertyName("name")]
-        [BsonRequired]
         public string Name { get; set; }
 
         [BsonElement("url")]
         [JsonPropertyName("url")]
-        [BsonRequired]
         public string Url { get; set; }
 
         [JsonPropertyName("description")]
         [BsonElement("description")]
         public string? Description { get; set; }
 
-        [ObjectId]
-        [JsonPropertyName("image_id")]
-        [BsonElement("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? ImageId { get; set; }
+        //[ObjectId]
+        //[JsonPropertyName("image_id")]
+        //[BsonElement("image_id")]
+        //[BsonRepresentation(BsonType.ObjectId)]
+        //public string? ImageId { get; set; }
 
         [BsonElement("custom_graph_point_types")]
         [JsonPropertyName("custom_graph_point_types")]

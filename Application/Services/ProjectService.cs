@@ -57,27 +57,26 @@ namespace Constructor_API.Application.Services
                 AddedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            project.ProjectUsers = [projUser];
 
-            //await _projectUserRepository.AddAsync(projUser, cancellationToken);
+            await _projectUserRepository.AddAsync(projUser, cancellationToken);
             await _projectRepository.AddAsync(project, cancellationToken);
             await _projectRepository.SaveChanges();
 
             return project;
         }
 
-        public async Task<Project> GetProjectById(
-            string id, CancellationToken cancellationToken)
+        public async Task<GetProjectDto> GetProjectById(
+            string id, string userId, CancellationToken cancellationToken)
         {
-            return await _projectRepository.FirstOrDefaultAsync(g => g.Id == id, cancellationToken)
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+                ?? throw new NotFoundException("User is not found");
+            var project = await _projectRepository.FirstGetProjectDtoOrDefaultAsync(p => p.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Project is not found");
-        }
 
-        public async Task<GetProjectDto> GetProjectInfoById(
-            string id, CancellationToken cancellationToken)
-        {
-            return await _projectRepository.FirstGetProjectDtoOrDefaultAsync(g => g.Id == id, cancellationToken)
-                ?? throw new NotFoundException("Project is not found");
+            user.SelectedProject = id;
+            await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
+
+            return project;
         }
 
         public async Task<IReadOnlyList<Project>> GetAllProjects(
@@ -92,16 +91,15 @@ namespace Constructor_API.Application.Services
             return await _buildingRepository.SimpleGetBuildingDtoListAsync(b => b.ProjectId == projectId, cancellationToken);
         }
 
-        public async Task<Building> GetBuildingInProjectByName(string projectId, string name,
-            CancellationToken cancellationToken)
+        public async Task DeleteProject(string id, string userId, CancellationToken cancellationToken)
         {
-            return await _buildingRepository.FirstOrDefaultAsync(b =>
-                b.ProjectId == projectId && b.Name == name, cancellationToken)
-                ?? throw new NotFoundException("Building not found");
-        }
-
-        public async Task DeleteProject(string id, CancellationToken cancellationToken)
-        {
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+               ?? throw new NotFoundException("User is not found");
+            if (user.SelectedProject == id)
+            {
+                user.SelectedProject = "";
+                await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
+            }
             if (await _projectRepository.CountAsync(p => p.Id == id, cancellationToken) == 0)
                 throw new NotFoundException($"Project is not found");
             if (await _buildingRepository.CountAsync(b => b.ProjectId == id, cancellationToken) == 0)

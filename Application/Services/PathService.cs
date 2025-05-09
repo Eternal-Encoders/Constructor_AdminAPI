@@ -2,6 +2,7 @@
 using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
 using Constructor_API.Models.Objects;
+using System.Collections.Generic;
 
 namespace Constructor_API.Application.Services
 {
@@ -25,51 +26,52 @@ namespace Constructor_API.Application.Services
         {
             var startGP = await _graphPointService.GetGraphPointById(startId, CancellationToken.None);
             var endGP = await _graphPointService.GetGraphPointById(endId, CancellationToken.None);
-            var floors = new List<GetFloorDto>();
+            var floors = new List<FloorForPathDto>();
             var startFloor = await _floorService.GetFloorByIdWithGraphPoints(startGP.FloorId, CancellationToken.None);
-            floors.Add(startFloor);
+            var startBuilding = await _buildingService.GetBuildingById(startFloor.BuildingId,
+                CancellationToken.None) ?? throw new NotFoundException($"Building {startFloor.BuildingId} is not found");
+            floors.AddRange(await _buildingService.GetPathFloorsByBuilding(startBuilding.Id, CancellationToken.None));
+            var floorToUpdate = floors.FirstOrDefault(x => x.Id == startFloor.Id);
+            if (floorToUpdate != null)
+            {
+                floorToUpdate.GraphPoints = startFloor.GraphPoints;
+            }
+
             if (startGP.FloorId != endGP.FloorId)
             {
                 var endFloor = await _floorService.GetFloorByIdWithGraphPoints(endGP.FloorId, CancellationToken.None);
-                var startBuilding= await _buildingService.GetBuildingById(startFloor.BuildingId,
-                    CancellationToken.None);
-                if (startBuilding == null)
-                    throw new NotFoundException($"Building {startFloor.BuildingId} is not found");
                 var endBuilding = await _buildingService.GetBuildingById(endFloor.BuildingId,
-                    CancellationToken.None);
-                if (endBuilding == null)
-                    throw new NotFoundException($"Building {endFloor.BuildingId} is not found");
-
+                    CancellationToken.None) ?? throw new NotFoundException($"Building {endFloor.BuildingId} is not found");
                 if (endBuilding.ProjectId != startBuilding.ProjectId)
                     throw new Exception($"Buildings {startBuilding.Id} and {endBuilding.Id} are from different projects");
 
-                floors.Add(endFloor);
-
-                if (endBuilding.Id != startBuilding.Id)
+                if (startBuilding.Id != endBuilding.Id)
                 {
-                    //foreach (var exit in await _buildingService.GetPointsByBuildingAndType(
-                    //    startBuilding.Id, "exit", CancellationToken.None))
-                    //{
-
-                    //}
-                    //foreach (var entrance in await _buildingService.GetPointsByBuildingAndType(
-                    //    endBuilding.Id, "exit", CancellationToken.None))
-                    //{
-
-                    //}
-
+                    floors.AddRange(await _buildingService.GetPathFloorsByBuilding(endBuilding.Id, CancellationToken.None));
+                    floorToUpdate = floors.FirstOrDefault(x => x.Id == endFloor.Id);
+                    if (floorToUpdate != null)
+                    {
+                        floorToUpdate.GraphPoints = endFloor.GraphPoints;
+                    }
                     return (await FindPathAStar(startGP, (await _buildingService.
                         GetPointsByBuildingAndType(startBuilding.Id, "Exit", CancellationToken.None))[0], floors))
                         .Item1.Concat((await FindPathAStar((await _buildingService.
                         GetPointsByBuildingAndType(endBuilding.Id, "Exit", CancellationToken.None))[0], endGP, floors))
                         .Item1).ToList();
                 }
+                else
+                {
+                    floorToUpdate = floors.FirstOrDefault(x => x.Id == endFloor.Id);
+                    if (floorToUpdate != null)
+                    {
+                        floorToUpdate.GraphPoints = endFloor.GraphPoints;
+                    }
+                }
             }
-            
             return (await FindPathAStar(startGP, endGP, floors)).Item1;
         }
 
-        public async Task<Tuple<List<string>?, double>> FindPathAStar(GraphPoint start, GraphPoint end, List<GetFloorDto> floors)
+        public async Task<Tuple<List<string>?, double>> FindPathAStar(GraphPoint start, GraphPoint end, List<FloorForPathDto> floors)
         {
             var closed = new List<PathNode>();
             var open = new List<PathNode>();
@@ -81,21 +83,39 @@ namespace Constructor_API.Application.Services
             async Task<List<PathNode>> GetNeighbours(PathNode pathNode, GraphPoint goal)
             {
                 var result = new List<PathNode>();
+                var actualFloor = floors.FirstOrDefault(x => x.Id == pathNode.GraphPoint.FloorId)
+                    ?? throw new NotFoundException($"Floor transition {pathNode.GraphPoint.FloorId} is not found"); ;
 
                 List<GraphPoint> neighbourPoints = [];
                 if (pathNode.GraphPoint.TransitionId != null)
                 {
                     if (transitions == null)
                         throw new NotFoundException($"Floors transition {pathNode.GraphPoint.TransitionId} is not found");
-                    var transition = transitions.FirstOrDefault(c => c.Id == pathNode.GraphPoint.TransitionId);
-                    if (transition == null)
-                        throw new NotFoundException($"Floors transition {pathNode.GraphPoint.TransitionId} is not found");
+                    var transition = transitions.FirstOrDefault(c => c.Id == pathNode.GraphPoint.TransitionId)
+                        ?? throw new NotFoundException($"Floors transition {pathNode.GraphPoint.TransitionId} is not found");
                     transition.LinkIds ??= [];
 
                     foreach (var neighbourId in transition.LinkIds)
                     {
                         if (neighbourId == pathNode.CameFrom?.GraphPoint.Id) continue;
-                        neighbourPoints.Add(await _graphPointService.GetGraphPointById(neighbourId, CancellationToken.None));
+                        var potentialNeighbour = await _graphPointService.GetGraphPointById(neighbourId, CancellationToken.None)
+                            ?? throw new NotFoundException($"Graph point {neighbourId} is not found");
+                        FloorForPathDto? potentialFloor = floors.FirstOrDefault(x => x.Id == potentialNeighbour.FloorId);
+                        if (potentialFloor != null)
+                        {
+                            if (transition.Direction != null && transition.Direction.ToLower() == "up")
+                            {
+                                if (potentialFloor.Index > actualFloor.Index)
+                                    neighbourPoints.Add(potentialNeighbour);
+                            }
+                            else if (transition.Direction != null && transition.Direction.ToLower() == "down")
+                            {
+                                if (potentialFloor.Index < actualFloor.Index)
+                                    neighbourPoints.Add(potentialNeighbour);
+                            }
+                            else if (transition.Direction == null)
+                                neighbourPoints.Add(potentialNeighbour);
+                        }
                     }
                 }
 
@@ -112,7 +132,11 @@ namespace Constructor_API.Application.Services
                     if (neighbour == null)
                     {
                         neighbour = await _graphPointService.GetGraphPointById(neighbourId, CancellationToken.None);
-                        floors.Add(await _floorService.GetFloorByIdWithGraphPoints(neighbour.FloorId, CancellationToken.None));
+                        var floorToUpdate = floors.FirstOrDefault(x => x.Id == neighbour.FloorId);
+                        if (floorToUpdate != null)
+                        {
+                            floorToUpdate.GraphPoints = [..await _floorService.GetGraphPointsByFloor(neighbour.FloorId, CancellationToken.None)];
+                        }
                     }
                     neighbourPoints.Add(neighbour);
                 }

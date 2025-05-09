@@ -38,6 +38,10 @@ namespace Constructor_API.Models.Entities
         [ObjectId]
         public string[]? LinkIds { get; set; }
 
+        [BsonElement("direction")]
+        [JsonPropertyName("direction")]
+        public string? Direction { get; set; }
+
         //[BsonIgnore]
         //[JsonPropertyName("links")]
         //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

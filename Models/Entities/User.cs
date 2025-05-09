@@ -53,5 +53,9 @@ namespace Constructor_API.Models.Entities
         [JsonPropertyName("paid_feature_id")]
         [BsonIgnoreIfNull]
         public string[]? FeatureIds { get; set; }
+
+        [BsonElement("selected_project_id")]
+        [JsonPropertyName("selected_project_id")]
+        public string SelectedProject { get; set; }
     }
 }

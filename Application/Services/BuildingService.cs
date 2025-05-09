@@ -70,6 +70,11 @@ namespace Constructor_API.Application.Services
             return await _floorRepository.SimpleGetFloorDtoByBuildingListAsync(f => f.BuildingId == buildingId, cancellationToken);
         }
 
+        public async Task<IReadOnlyList<FloorForPathDto>> GetPathFloorsByBuilding(string buildingId, CancellationToken cancellationToken)
+        {
+            return await _floorRepository.FloorForPathDtoListAsync(f => f.BuildingId == buildingId, cancellationToken);
+        }
+
         public async Task<IReadOnlyList<GetFloorDto>> GetFloorsByBuildingWithGraphPoints(string buildingId,
             CancellationToken cancellationToken)
         {
@@ -105,14 +110,14 @@ namespace Constructor_API.Application.Services
         public async Task<Floor> GetFloorInBuildingByNumber(string buildingId, int number, CancellationToken cancellationToken)
         {
             return await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
-                f.FloorNumber == number, cancellationToken) ?? throw new NotFoundException("Floor is not found");
+                f.Index == number, cancellationToken) ?? throw new NotFoundException("Floor is not found");
         }
 
         public async Task<GetFloorDto> GetFloorInBuildingByNumberWithGraphPoints(string buildingId,
             int number, CancellationToken cancellationToken)
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(f => f.BuildingId == buildingId &&
-                f.FloorNumber == number, cancellationToken) ?? throw new NotFoundException($"Floor is not found");
+                f.Index == number, cancellationToken) ?? throw new NotFoundException($"Floor is not found");
             var res = _mapper.Map<GetFloorDto>(floor);
             res.GraphPoints = [..await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken)];
 

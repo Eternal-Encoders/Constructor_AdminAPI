@@ -4,6 +4,7 @@ using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.Entities;
 using MongoDB.Driver;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Constructor_API.Infractructure.Repositories
@@ -14,28 +15,30 @@ namespace Constructor_API.Infractructure.Repositories
         {
         }
 
-        public async Task<FloorForPathDto?> FirstFloorForPathDtoOrDefaultAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken)
+        public async Task<FloorForPathDto[]> FloorForPathDtoListAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken)
         {
-            return await DbCollection
+            List<FloorForPathDto> pathFloors = await DbCollection
                 .Find(predicate)
                 .Project(f => new FloorForPathDto
                 {
                     Id = f.Id,
-                    FloorNumber = f.FloorNumber,
-                    GraphPoints = null
+                    Index = f.Index,
+                    GraphPoints = null,
+                    BuildingId = f.BuildingId,
                 })
-                .FirstOrDefaultAsync();
+                .ToListAsync() ?? [];
+            return [.. pathFloors];
         }
 
         public async Task<GetFloorDto[]> SimpleGetFloorDtoByBuildingListAsync(Expression<Func<Floor, bool>> predicate, CancellationToken cancellationToken)
         {
-            var floors = await DbCollection
+            List<GetFloorDto> floors = await DbCollection
                 .Find(predicate)
                 .Project(f => new GetFloorDto
                 {
                     Id = f.Id,
-                    FloorNumber = f.FloorNumber,
-                    FloorName = f.FloorName,
+                    Index = f.Index,
+                    Name = f.Name,
                 })
                 .ToListAsync() ?? [];
 

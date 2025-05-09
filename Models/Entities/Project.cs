@@ -14,7 +14,7 @@ namespace Constructor_API.Models.Entities
         [BsonElement("_id")]
         [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         [BsonElement("name")]
         [JsonPropertyName("name")]
@@ -36,19 +36,15 @@ namespace Constructor_API.Models.Entities
         //[BsonRequired]
         //public string[] ProjectUserIds { get; set; }
 
-        [BsonIgnore]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public ProjectUser[]? ProjectUsers { get; set; }
-
         [JsonPropertyName("description")]
         [BsonElement("description")]
         public string? Description { get; set; }
 
-        //[ObjectId]
-        //[JsonPropertyName("image_id")]
-        //[BsonElement("image_id")]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        //public string? ImageId { get; set; }
+        [ObjectId]
+        [JsonPropertyName("image_id")]
+        [BsonElement("image_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? ImageId { get; set; }
 
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]

@@ -72,7 +72,7 @@ namespace Constructor_API.Application.Services
                     if (floor.GraphPoints.Any(g => g == graphPointDto.Id))
                         throw new AlreadyExistsException(
                             $"There is more than 1 graph point with ConnectionId {graphPointDto.TransitionId} " +
-                            $"on floor {floor.FloorNumber}");
+                            $"on floor {floor.Index}");
 
                     //Если соединение найдено и ссылка на него одна, то id точки добавляется в его массив Links
                     connection.LinkIds ??= [];

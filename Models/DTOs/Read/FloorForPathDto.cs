@@ -12,10 +12,13 @@ namespace Constructor_API.Models.DTOs.Read
         [ObjectId]
         public string Id { get; set; }
 
-        [BsonElement("number")]
-        public int FloorNumber { get; set; }
+        [BsonElement("index")]
+        public int Index { get; set; }
 
         [BsonElement("graph")]
         public GraphPoint[]? GraphPoints { get; set; }
+
+        [BsonElement("building_id")]
+        public string BuildingId { get; set; }
     }
 }
