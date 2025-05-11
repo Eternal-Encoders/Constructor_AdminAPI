@@ -4,6 +4,7 @@ using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using System.Threading;
 
 namespace Constructor_API.Controllers
 {
@@ -97,11 +98,34 @@ namespace Constructor_API.Controllers
         /// <returns></returns>
         [HttpGet("all")]
         [Authorize]
-        public async Task<IActionResult> GetAllConnections()
-        { 
+        public async Task<IActionResult> GetAllTransitions()
+        {
             var res = await _floorsTransitionService.GetAllTransitions(CancellationToken.None);
 
             return Ok(res);
+        }
+
+        /// <summary>
+        /// Удаляет переход
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteTransition(string id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _))
+                return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "FloorsTransition");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _floorsTransitionService.DeleteTransition(id, CancellationToken.None);
+
+            return Ok();
         }
     }
 }

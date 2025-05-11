@@ -20,7 +20,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
-//Добавление файла конфигурации
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 builder.Configuration.AddEnvironmentVariables();
 
 var testOrigins = "testOrigins";
@@ -122,7 +122,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    //Только dev
+    //пїЅпїЅпїЅпїЅпїЅпїЅ dev
     options.RequireHttpsMetadata = false;
     //options.RequireHttpsMetadata = true;
     options.SaveToken = true;
@@ -206,7 +206,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+//app.UseSwagger();
+//app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

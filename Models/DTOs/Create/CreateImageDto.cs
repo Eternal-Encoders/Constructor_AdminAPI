@@ -12,6 +12,7 @@ namespace Constructor_API.Models.DTOs.Create
         public string Url { get; set; }
 
         [JsonPropertyName("name")]
+        [MinLength(1)]
         public string? Name { get; set; }
 
         [JsonPropertyName("filesize")]

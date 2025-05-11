@@ -37,11 +37,11 @@ namespace Constructor_API.Models.Entities
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Building? Building { get; set; }
 
-        [BsonElement("image_ids")]
-        [JsonPropertyName("image_ids")]
-        [ObjectId]
+        //[BsonElement("image_ids")]
+        //[JsonPropertyName("image_ids")]
+        //[ObjectId]
         //[BsonRepresentation(BsonType.ObjectId)]
-        public string[] ImageIds { get; set; }
+        //public string[] ImageIds { get; set; }
 
         //[BsonElement("images")]
         //[JsonPropertyName("images")]

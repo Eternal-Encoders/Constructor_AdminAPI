@@ -188,7 +188,7 @@ namespace Constructor_API.Application.Services
             floor.Decorations = [];
             floor.Width = 0;
             floor.Height = 0;
-            floor.ImageIds = [];
+            //floor.ImageIds = [];
             //Обновление здания, добавление в него этажа
             if (building.FloorIds == null)
                 building.FloorIds = [floor.Id];
@@ -483,7 +483,7 @@ namespace Constructor_API.Application.Services
             }
 
             prevFloor.Name = floorDto.Name ?? prevFloor.Name;
-            prevFloor.ImageIds = floorDto.ImageIds;
+            //prevFloor.ImageIds = floorDto.ImageIds;
             prevFloor.Width = floorDto.Width ?? prevFloor.Width;
             prevFloor.Height = floorDto.Height ?? prevFloor.Height;
             prevFloor.Decorations = floorDto.Decorations ?? prevFloor.Decorations;

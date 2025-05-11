@@ -15,6 +15,7 @@ namespace Constructor_API.Models.DTOs.Create
         public int? Index { get; set; }
 
         [JsonPropertyName("name")]
+        [MinLength(1)]
         public string? Name { get; set; }
 
         [JsonPropertyName("building_id")]

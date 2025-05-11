@@ -13,6 +13,7 @@ namespace Constructor_API.Models.DTOs.Update
         public int? Index { get; set; }
 
         [JsonPropertyName("name")]
+        [MinLength(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Name { get; set; }
 
@@ -21,10 +22,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? BuildingId { get; set; }
 
-        [JsonPropertyName("image_ids")]
-        [ObjectId]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string[]? ImageIds { get; set; }
+        //[JsonPropertyName("image_ids")]
+        //[ObjectId]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //public string[]? ImageIds { get; set; }
 
         [JsonPropertyName("width")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

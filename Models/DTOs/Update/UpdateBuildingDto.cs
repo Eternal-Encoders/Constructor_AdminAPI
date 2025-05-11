@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Helpers.Attributes;
 using Constructor_API.Models.Objects;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.DTOs.Update
@@ -13,14 +14,17 @@ namespace Constructor_API.Models.DTOs.Update
         public string? ProjectId { get; set; }
 
         [JsonPropertyName("name")]
+        [MinLength(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Name { get; set; }
 
         [JsonPropertyName("displayable_name")]
+        [MinLength(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? DisplayableName { get; set; }
 
         [JsonPropertyName("url")]
+        [MinLength(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Url { get; set; }
 
@@ -32,10 +36,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? Longitude { get; set; }
 
-        [ObjectId]
-        [JsonPropertyName("image_id")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? ImageId { get; set; }
+        //[ObjectId]
+        //[JsonPropertyName("image_id")]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //public string? ImageId { get; set; }
 
         [JsonPropertyName("gps")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
