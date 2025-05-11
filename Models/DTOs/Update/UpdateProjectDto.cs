@@ -2,6 +2,7 @@
 using Constructor_API.Models.Objects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.DTOs.Update
@@ -10,10 +11,12 @@ namespace Constructor_API.Models.DTOs.Update
     {
         [BsonElement("name")]
         [JsonPropertyName("name")]
+        [MinLength(1)]
         public string Name { get; set; }
 
         [BsonElement("url")]
         [JsonPropertyName("url")]
+        [MinLength(1)]
         public string Url { get; set; }
 
         [JsonPropertyName("description")]

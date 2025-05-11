@@ -48,6 +48,9 @@ namespace Constructor_API.Application.Services
             //project.ImageId = projectDto.Image;
             project.Id = ObjectId.GenerateNewId().ToString();
 
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+                ?? throw new NotFoundException("User is not found");
+
             var projUser = new ProjectUser
             {
                 Id = ObjectId.GenerateNewId().ToString(),
@@ -58,6 +61,8 @@ namespace Constructor_API.Application.Services
                 UpdatedAt = DateTime.UtcNow,
             };
 
+            user.SelectedProject = project.Id;
+            await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
             await _projectUserRepository.AddAsync(projUser, cancellationToken);
             await _projectRepository.AddAsync(project, cancellationToken);
             await _projectRepository.SaveChanges();
@@ -102,8 +107,8 @@ namespace Constructor_API.Application.Services
             }
             if (await _projectRepository.CountAsync(p => p.Id == id, cancellationToken) == 0)
                 throw new NotFoundException($"Project is not found");
-            if (await _buildingRepository.CountAsync(b => b.ProjectId == id, cancellationToken) == 0)
-                throw new NotFoundException($"Buildings are not found");
+            //if (await _buildingRepository.CountAsync(b => b.ProjectId == id, cancellationToken) == 0)
+            //    throw new NotFoundException($"Buildings are not found");
             await _projectRepository.RemoveAsync(p => p.Id == id, cancellationToken);
             await _projectRepository.SaveChanges();
         }

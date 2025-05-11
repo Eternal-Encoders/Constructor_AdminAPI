@@ -168,7 +168,7 @@ namespace Constructor_API.Application.Services
             prevBuilding.Name = buildingDto.Name ?? prevBuilding.Name;
             prevBuilding.DisplayableName = buildingDto.DisplayableName ?? prevBuilding.DisplayableName;
             prevBuilding.Url = buildingDto.Url ?? prevBuilding.Url;
-            prevBuilding.ImageId = buildingDto.ImageId ?? prevBuilding.ImageId;
+            //prevBuilding.ImageId = buildingDto.ImageId ?? prevBuilding.ImageId;
 
             if (buildingDto.ProjectId != null)
                 if (await _projectRepository.FirstOrDefaultAsync(

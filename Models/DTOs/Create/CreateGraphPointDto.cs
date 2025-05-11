@@ -35,6 +35,7 @@ namespace Constructor_API.Models.DTOs.Create
 
         [JsonPropertyName("names")]
         [Required]
+        [MinLength(1)]
         public string? Name { get; set; }
 
         [JsonPropertyName("synonyms")]

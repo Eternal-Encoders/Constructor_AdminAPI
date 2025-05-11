@@ -43,6 +43,8 @@ namespace Constructor_API.Infractructure.Repositories
                     projectIds.Contains(b.ProjectId)));
                 await base.AddCommand(async (IClientSessionHandle s) => await projectCollection.DeleteManyAsync(p =>
                     projectIds.Contains(p.Id)));
+                await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.DeleteManyAsync(p =>
+                    p.UserId == user.Id));
 
                 await base.RemoveAsync(predicate, cancellationToken);
             }

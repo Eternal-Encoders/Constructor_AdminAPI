@@ -83,7 +83,6 @@ namespace Constructor_API.Infractructure.Repositories
                     project.BuildingIds.Contains(b.Id)));
                 await base.AddCommand(async (IClientSessionHandle s) => await projectUserCollection.DeleteManyAsync(pu =>
                     pu.ProjectId == project.Id));
-
                 await base.RemoveAsync(predicate, cancellationToken);
             }
         }
