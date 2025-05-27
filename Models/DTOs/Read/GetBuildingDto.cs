@@ -36,6 +36,14 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("last_floor_id")]
+        public string? LastFloorId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("default_floor_id")]
+        public string? DefaultFloorId { get; set; }
+
         //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         //[JsonPropertyName("floor_ids")]
         //[ObjectId]

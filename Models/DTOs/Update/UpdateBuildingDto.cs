@@ -40,6 +40,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? Longitude { get; set; }
 
+        [BsonElement("default_floor_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? DefaultFloorId { get; set; }
+
         //[ObjectId]
         //[JsonPropertyName("image_id")]
         //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

@@ -194,6 +194,7 @@ namespace Constructor_API.Application.Services
                 building.FloorIds = [floor.Id];
             else
                 building.FloorIds = [.. building.FloorIds.Append(floor.Id)];
+            building.LastFloorId = floor.Id;
             await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
             floor.CreatedAt = now;
             floor.UpdatedAt = now;
@@ -398,8 +399,17 @@ namespace Constructor_API.Application.Services
 
         public async Task<Floor> GetFloorById(string id, CancellationToken cancellationToken)
         {
-            return await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
+            var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Floor is not found");
+
+            var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+                 b.Id == floor.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
+
+            building.LastFloorId = floor.Id;
+            await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+
+            await _floorRepository.SaveChanges();
+            return floor;
         }
 
         public async Task<GetFloorDto> GetFloorByIdWithGraphPoints(string id,
@@ -409,8 +419,15 @@ namespace Constructor_API.Application.Services
                 ?? throw new NotFoundException("Floor is not found");
             GetFloorDto res = _mapper.Map<GetFloorDto>(floor);
 
+            var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+                b.Id == floor.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
+
+            building.LastFloorId = floor.Id;
+            await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+
             res.GraphPoints = [..await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken)];
 
+            await _floorRepository.SaveChanges();
             return res;
         }
 
@@ -418,6 +435,14 @@ namespace Constructor_API.Application.Services
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Floor is not found");
+
+            var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+                b.Id == floor.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
+            if (building.LastFloorId == floor.Id)
+            {
+                building.LastFloorId = "";
+                await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+            }
 
             foreach (var point in floor.GraphPoints)
             {
@@ -449,9 +474,14 @@ namespace Constructor_API.Application.Services
                 p.Id == building.ProjectId, cancellationToken) ?? throw new NotFoundException("Project is not found");
             DateTime now = DateTime.UtcNow;
             Dictionary<string, string[]> graphIdsDict = [];
+            building.LastFloorId = prevFloor.Id;
 
             if (floorDto.BuildingId != null && floorDto.BuildingId != prevFloor.BuildingId)
             {
+                if (building.LastFloorId == prevFloor.Id)
+                    building.LastFloorId = "";
+                await _buildingRepository.UpdateAsync(b => b.Id == prevFloor.BuildingId, building, cancellationToken);
+
                 building = await _buildingRepository.FirstOrDefaultAsync(b =>
                     b.Id == floorDto.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
                 project = await _projectRepository.FirstOrDefaultAsync(p =>
@@ -468,6 +498,9 @@ namespace Constructor_API.Application.Services
                         prevFloor.Index = (int)floorDto.Index;
                         prevFloor.BuildingId = floorDto.BuildingId;
                     }
+
+                    building.LastFloorId = prevFloor.Id;
+                    await _buildingRepository.UpdateAsync(b => b.Id == prevFloor.BuildingId, building, cancellationToken);
                 }
             }
             else if (floorDto.Index != null && floorDto.Index != prevFloor.Index)

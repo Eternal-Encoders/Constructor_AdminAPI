@@ -59,6 +59,12 @@ namespace Constructor_API.Models.Entities
         [BsonElement("image_id")]
         public string? ImageId { get; set; }
 
+        [BsonElement("last_floor_id")]
+        public string? LastFloorId { get; set; }
+
+        [BsonElement("default_floor_id")]
+        public string? DefaultFloorId { get; set; }
+
         [BsonElement("gps")]
         [BsonIgnoreIfNull]
         public GPS? GPS { get; set; }

@@ -39,7 +39,7 @@ namespace Constructor_API.Application.Services
             _imageService = imageService;
         }
 
-        public async Task<Project> InsertProject(
+        public async Task<GetProjectDto> InsertProject(
             CreateProjectDto projectDto, 
             string userId,
             IFormFile? file,
@@ -79,7 +79,7 @@ namespace Constructor_API.Application.Services
             await _projectRepository.AddAsync(project, cancellationToken);
             await _projectRepository.SaveChanges();
 
-            return project;
+            return _mapper.Map<GetProjectDto>(project);
         }
 
         public async Task<GetProjectDto> GetProjectById(

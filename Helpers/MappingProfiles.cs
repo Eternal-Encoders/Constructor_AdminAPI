@@ -44,7 +44,7 @@ namespace Constructor_API.Helpers
 
             CreateMap<User, GetUserDto>();
 
-            //CreateMap<Project, GetProjectDto>();
+            CreateMap<Project, GetProjectDto>();
         }
     }
 }
