@@ -29,7 +29,7 @@ namespace Constructor_API.Infractructure.Repositories
                     Synonyms = gp.Synonyms,
                     Time = gp.Time,
                     Description = gp.Description,
-                    Info = gp.Info,
+                    //Info = gp.Info,
                     RouteActive = gp.RouteActive,
                     TransitionId = gp.TransitionId
                 })

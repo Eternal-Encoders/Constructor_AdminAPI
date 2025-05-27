@@ -21,7 +21,7 @@ namespace Constructor_API.Application.Services
             _configuration = configuration;
         }
 
-        public async Task InsertImage(IFormFile file, CancellationToken cancellationToken)
+        public async Task<Image> InsertImage(IFormFile file, CancellationToken cancellationToken)
         {
             if (file.Length == 0) throw new ValidationException("Empty file");
 
@@ -51,6 +51,7 @@ namespace Constructor_API.Application.Services
                 image.Name,
                 stream,
                 CancellationToken.None);
+            return image;
         }
 
         public async Task<Tuple<Image, MemoryStream>> GetImageByName(string fileName, CancellationToken cancellationToken)

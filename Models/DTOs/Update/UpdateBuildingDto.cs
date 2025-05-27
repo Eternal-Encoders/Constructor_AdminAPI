@@ -23,6 +23,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? DisplayableName { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
         [JsonPropertyName("url")]
         [MinLength(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

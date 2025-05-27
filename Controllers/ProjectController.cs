@@ -5,6 +5,8 @@ using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using System.Net.Http;
+using System;
 using System.Security.Claims;
 
 namespace Constructor_API.Controllers
@@ -25,7 +27,7 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет проект в БД
         /// </summary>
-        /// <param name="projectDto"></param>
+        /// <param name="projectDto">Тело проекта</param>
         /// <returns></returns>
         [HttpPost]
         [Authorize]
@@ -36,14 +38,33 @@ namespace Constructor_API.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var project = await _projectService.InsertProject(projectDto, userId, CancellationToken.None);
+            var project = await _projectService.InsertProject(projectDto, userId, null, CancellationToken.None);
+            return Ok(project);
+        }
+
+        /// <summary>
+        /// Добавляет проект в БД, тестовая версия отправки с файлом
+        /// </summary>
+        /// <param name="projectDto">Тело проекта</param>
+        /// <param name="file">Файл</param>
+        /// <returns></returns>
+        [HttpPost("multipart")]
+        [Authorize]
+        public async Task<IActionResult> PostProjectMultipart(IFormFile file, [FromForm] CreateProjectDto projectDto)
+        {
+            if (projectDto == null) return BadRequest("Wrong input");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            var project = await _projectService.InsertProject(projectDto, userId, file, CancellationToken.None);
             return Ok(project);
         }
 
         /// <summary>
         /// Возвращает информацию о проекте по ID
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">ID проекта, 24 символа</param>
         /// <returns></returns>
         [HttpGet("{id}")]
         [Authorize]
@@ -64,6 +85,39 @@ namespace Constructor_API.Controllers
             var project = await _projectService.GetProjectById(id, userId, CancellationToken.None);
 
             return Ok(project);
+        }
+
+        /// <summary>
+        /// Возвращает информацию о проекте по ID, тестовая версия получения с файлом
+        /// </summary>
+        /// <param name="id">ID проекта, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/multipart")]
+        [Authorize]
+        public async Task<IActionResult> GetProjectByIdMultipart(string? id)
+        {
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Project");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var project = await _projectService.GetProjectByIdMultipart(id, userId, CancellationToken.None);
+
+            //return Ok(project);
+            if (project.Item1 != null)
+                return new FileStreamResult(project.Item2.ReadAsStreamAsync().Result, "multipart/mixed")
+                {
+                    FileDownloadName = project.Item1.Name
+                };
+
+            else return new FileStreamResult(project.Item2.ReadAsStreamAsync().Result, "multipart/mixed");
         }
 
         /// <summary>

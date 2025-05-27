@@ -27,6 +27,7 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет здание в БД
         /// </summary>
+        /// <param name="buildingDto"></param>
         /// <returns></returns>
         [HttpPost]
         [Authorize]
@@ -40,7 +41,29 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            var building = await _buildingService.InsertBuilding(buildingDto, CancellationToken.None);
+            var building = await _buildingService.InsertBuilding(buildingDto, null, CancellationToken.None);
+            return Ok(building);
+        }
+
+        /// <summary>
+        /// Добавляет здание в БД, тестовая версия отправки с файлом 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="buildingDto"></param>
+        /// <returns></returns>
+        [HttpPost("multipart")]
+        [Authorize]
+        public async Task<IActionResult> PostBuildingMultipart(IFormFile file, [FromForm] CreateBuildingDto buildingDto)
+        {
+            if (buildingDto == null) return BadRequest("Wrong input");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, buildingDto.ProjectId, "Project");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var building = await _buildingService.InsertBuilding(buildingDto, file, CancellationToken.None);
             return Ok(building);
         }
 
@@ -88,6 +111,35 @@ namespace Constructor_API.Controllers
 
             var building = await _buildingService.GetBuildingById(id, CancellationToken.None);
             return Ok(building);
+        }
+
+        /// <summary>
+        /// Возвращает здание по ID, тестовая версия отправки с файлом
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}/multipart")]
+        [Authorize]
+        public async Task<IActionResult> GetBuildingByIdMultipart(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest(
+                "Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var building = await _buildingService.GetBuildingByIdMultipart(id, CancellationToken.None);
+            if (building.Item1 != null)
+                return new FileStreamResult(building.Item2.ReadAsStreamAsync().Result, "multipart/mixed")
+                {
+                    FileDownloadName = building.Item1.Name
+                };
+
+            else return new FileStreamResult(building.Item2.ReadAsStreamAsync().Result, "multipart/mixed");
         }
 
         /// <summary>

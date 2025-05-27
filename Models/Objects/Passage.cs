@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Constructor_API.Helpers.Attributes;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -7,13 +8,13 @@ namespace Constructor_API.Models.Objects
 {
     public class Passage
     {
-        [BsonId]
         [Required]
+        [BsonRequired]
         [BsonElement("_id")]
         [JsonPropertyName("id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [ObjectId]
         //Такой же, как у точки
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("x")]
         [JsonPropertyName("x")]
@@ -48,11 +49,18 @@ namespace Constructor_API.Models.Objects
         [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
         [BsonRequired]
+        [Required]
         public DateTime? CreatedAt { get; set; }
 
         [BsonElement("updated_at")]
         [JsonPropertyName("updated_at")]
         [BsonRequired]
+        [Required]
         public DateTime? UpdatedAt { get; set; }
+
+        [BsonElement("updated_by")]
+        [JsonPropertyName("updated_by")]
+        [ObjectId]
+        public string? UpdatedBy { get; set; }
     }
 }

@@ -6,27 +6,27 @@ namespace Constructor_API.Models.Objects
 {
     public class Decoration
     {
-        [BsonElement("x")]
-        [JsonPropertyName("x")]
-        [Required]
-        [BsonRequired]
-        public double? X { get; set; }
+        //[BsonElement("x")]
+        //[JsonPropertyName("x")]
+        //[Required]
+        //[BsonRequired]
+        //public double? X { get; set; }
 
-        [BsonElement("y")]
-        [JsonPropertyName("y")]
-        [Required]
-        [BsonRequired]
-        public double? Y { get; set; }
+        //[BsonElement("y")]
+        //[JsonPropertyName("y")]
+        //[Required]
+        //[BsonRequired]
+        //public double? Y { get; set; }
 
         [JsonPropertyName("points")]
         [BsonElement("points")]
-        [BsonIgnoreIfNull]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [BsonRequired]
+        [Required]
         public Coordinates[]? Points { get; set; }
 
-        [BsonElement("data")]
-        [JsonPropertyName("data")]
-        public string? Data { get; set; }
+        //[BsonElement("data")]
+        //[JsonPropertyName("data")]
+        //public string? Data { get; set; }
 
         [BsonElement("stroke")]
         [JsonPropertyName("stroke")]
@@ -36,7 +36,6 @@ namespace Constructor_API.Models.Objects
 
         [BsonElement("fill")]
         [JsonPropertyName("fill")]
-        [BsonIgnoreIfNull]
         public string? Fill { get; set; }
     }
 }

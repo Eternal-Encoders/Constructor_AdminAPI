@@ -35,6 +35,7 @@ namespace Constructor_API.Infractructure.Repositories
                     Description = p.Description,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
+                    ImageId = p.ImageId,
                 })
                 .FirstOrDefaultAsync();
 

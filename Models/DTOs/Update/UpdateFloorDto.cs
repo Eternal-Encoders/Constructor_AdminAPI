@@ -46,9 +46,5 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonPropertyName("rooms")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Room[]? Rooms { get; set; }
-
-        [JsonPropertyName("forces")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Forces[]? Forces { get; set; }
     }
 }

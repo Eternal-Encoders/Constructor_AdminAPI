@@ -8,7 +8,6 @@ namespace Constructor_API.Models.DTOs.Read
 {
     public class GetProjectDto
     {
-        [BsonId]
         [JsonPropertyName("id")]
         public string Id { get; set; }
 
@@ -22,6 +21,10 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("description")]
         public string? Description { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("image_id")]
+        public string? ImageId { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("created_at")]

@@ -20,7 +20,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
-//���������� ����� ������������
+
 builder.Configuration.AddEnvironmentVariables();
 
 var testOrigins = "testOrigins";
@@ -153,8 +153,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("GraphPoint", policy =>
         policy.Requirements.Add(new TypeRequirement("GraphPoint")));
 
-    options.AddPolicy("FloorConnection", policy =>
-        policy.Requirements.Add(new TypeRequirement("FloorConnection")));
+    options.AddPolicy("FloorsTransition", policy =>
+        policy.Requirements.Add(new TypeRequirement("FloorsTransition")));
 });
 
 var app = builder.Build();

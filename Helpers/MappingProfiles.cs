@@ -42,6 +42,8 @@ namespace Constructor_API.Helpers
                 .ForMember(x => x.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
 
+            CreateMap<User, GetUserDto>();
+
             //CreateMap<Project, GetProjectDto>();
         }
     }

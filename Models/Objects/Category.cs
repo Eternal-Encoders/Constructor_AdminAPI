@@ -29,7 +29,6 @@ namespace Constructor_API.Models.Objects
 
         [BsonElement("updated_by")]
         [JsonPropertyName("updated_by")]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? UpdatedBy { get; set; }
     }
 }

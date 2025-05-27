@@ -8,12 +8,10 @@ namespace Constructor_API.Models.DTOs.Read
 {
     public class GetBuildingDto
     {
-        [ObjectId]
         [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [ObjectId]
-        [JsonPropertyName("project")]
+        [JsonPropertyName("project_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? ProjectId { get; set; }
 
@@ -27,13 +25,21 @@ namespace Constructor_API.Models.DTOs.Read
         public string? Name { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("image_id")]
+        public string? ImageId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("displayable_name")]
         public string? DisplayableName { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("floor_ids")]
-        [ObjectId]
-        public string[]? FloorIds { get; set; }
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //[JsonPropertyName("floor_ids")]
+        //[ObjectId]
+        //public string[]? FloorIds { get; set; }
 
         //[BsonIgnore]
         //[JsonPropertyName("floors")]
@@ -66,7 +72,6 @@ namespace Constructor_API.Models.DTOs.Read
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("updated_by")]
-        [ObjectId]
         public string? UpdatedBy { get; set; }
     }
 }

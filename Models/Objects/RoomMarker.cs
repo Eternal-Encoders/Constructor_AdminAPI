@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.Objects
 {
-    public class RoomChild
+    public class RoomMarker
     {
         private string type;
         [BsonElement("type")]
@@ -22,11 +22,11 @@ namespace Constructor_API.Models.Objects
             }
         }
 
-        [BsonElement("identifier")]
-        [JsonPropertyName("identifier")]
-        [Required]
-        [BsonRequired]
-        public string? Identifier { get; set; }
+        //[BsonElement("identifier")]
+        //[JsonPropertyName("identifier")]
+        //[Required]
+        //[BsonRequired]
+        //public string? Identifier { get; set; }
 
         [BsonElement("x")]
         [JsonPropertyName("x")]

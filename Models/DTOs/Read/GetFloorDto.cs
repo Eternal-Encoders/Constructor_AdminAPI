@@ -9,27 +9,18 @@ namespace Constructor_API.Models.DTOs.Read
 {
     public class GetFloorDto
     {
-        [BsonId]
-        [BsonElement("_id")]
         [JsonPropertyName("id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        [ObjectId]
         public string Id { get; set; }
 
-        [BsonElement("index")]
         [JsonPropertyName("index")]
         public int Index { get; set; }
 
-        [BsonElement("name")]
         [JsonPropertyName("name")]
         public string? Name { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("building_id")]
         [JsonPropertyName("building_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        [ObjectId]
-        public string BuildingId { get; set; }
+        public string? BuildingId { get; set; }
 
         //[BsonElement("building")]
         //[JsonPropertyName("building")]
@@ -37,52 +28,35 @@ namespace Constructor_API.Models.DTOs.Read
         //public string Building { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("width")]
         [JsonPropertyName("width")]
-        public int Width { get; set; }
+        public int? Width { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("height")]
         [JsonPropertyName("height")]
-        public int Height { get; set; }
+        public int? Height { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("decorations")]
         [JsonPropertyName("decorations")]
         public Decoration[]? Decorations { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("rooms")]
         [JsonPropertyName("rooms")]
         public Room[]? Rooms { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("graph")]
-        [JsonPropertyName("graph")]
+        [JsonPropertyName("graph_points")]
         public GraphPoint[]? GraphPoints { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("forces")]
-        [JsonPropertyName("forces")]
-        [BsonIgnoreIfNull]
-        public Forces[]? Forces { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("created_at")]
         [JsonPropertyName("created_at")]
-        [BsonRequired]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("updated_at")]
         [JsonPropertyName("updated_at")]
-        [BsonRequired]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [BsonElement("updated_by")]
         [JsonPropertyName("updated_by")]
-        [ObjectId]
         public string? UpdatedBy { get; set; }
     }
 }

@@ -55,8 +55,8 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [JsonPropertyName("info")]
-        public string? Info { get; set; }
+        //[JsonPropertyName("info")]
+        //public string? Info { get; set; }
 
         [JsonPropertyName("route_active")]
         [Required]

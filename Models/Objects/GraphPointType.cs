@@ -14,6 +14,8 @@ namespace Constructor_API.Models.Objects
         [JsonPropertyName("name")]
         public string? Name { get; set; }
 
+        [Required]
+        [BsonRequired]
         [BsonElement("category")]
         [JsonPropertyName("category")]
         public string? Category { get; set; }
@@ -39,7 +41,6 @@ namespace Constructor_API.Models.Objects
 
         [BsonElement("updated_by")]
         [JsonPropertyName("updated_by")]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? UpdatedBy { get; set; }
     }
 }

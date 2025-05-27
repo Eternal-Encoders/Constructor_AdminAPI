@@ -24,6 +24,9 @@ namespace Constructor_API.Models.DTOs.Create
         [MinLength(1)]
         public string? DisplayableName { get; set; }
 
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
         [JsonPropertyName("url")]
         [Required]
         [MinLength(1)]
@@ -36,9 +39,6 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("longitude")]
         [Required]
         public double? Longitude { get; set; }
-
-        //[JsonPropertyName("image")]
-        //public CreateImageDto? Image { get; set; }
 
         [JsonPropertyName("gps")]
         public GPS? GPS { get; set; }

@@ -7,6 +7,10 @@ using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using MongoDB.Bson;
 using System.Linq;
+using System.Text.Json;
+using System.Text;
+using System.Net.Http.Headers;
+using System;
 
 namespace Constructor_API.Application.Services
 {
@@ -17,24 +21,28 @@ namespace Constructor_API.Application.Services
         IUserRepository _userRepository;
         IMapper _mapper;
         IProjectUserRepository _projectUserRepository;
+        ImageService _imageService;
 
         public ProjectService(
             IProjectRepository projectRepository, 
             IBuildingRepository buildingRepository,
             IUserRepository userRepository,
             IMapper mapper,
-            IProjectUserRepository projectUserRepository)
+            IProjectUserRepository projectUserRepository,
+            ImageService imageService)
         {
             _projectRepository = projectRepository;
             _buildingRepository = buildingRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _projectUserRepository = projectUserRepository;
+            _imageService = imageService;
         }
 
         public async Task<Project> InsertProject(
             CreateProjectDto projectDto, 
-            string userId, 
+            string userId,
+            IFormFile? file,
             CancellationToken cancellationToken)
         {
             if (await _userRepository.CountAsync(u => u.Id == userId, cancellationToken) == 0)
@@ -45,7 +53,11 @@ namespace Constructor_API.Application.Services
             project.BuildingIds = [];
             if (await _projectRepository.CountAsync(p => p.Url == projectDto.Url, cancellationToken) != 0)
                 throw new AlreadyExistsException($"Project with url {projectDto.Url} already exists");
-            //project.ImageId = projectDto.Image;
+            if (file != null)
+            {
+                var image = await _imageService.InsertImage(file, cancellationToken);
+                project.ImageId = image.Id;
+            }
             project.Id = ObjectId.GenerateNewId().ToString();
 
             var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
@@ -79,9 +91,42 @@ namespace Constructor_API.Application.Services
                 ?? throw new NotFoundException("Project is not found");
 
             user.SelectedProject = id;
+
             await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
+            await _projectRepository.SaveChanges();
 
             return project;
+        }
+
+        public async Task<Tuple<Image?, MultipartContent>> GetProjectByIdMultipart(
+            string id, string userId, CancellationToken cancellationToken)
+        {
+            var project = await _projectRepository.FirstGetProjectDtoOrDefaultAsync(p => p.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Project is not found");
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+                ?? throw new NotFoundException("User is not found");
+
+            user.SelectedProject = id;
+
+            MultipartContent multipartContent = new MultipartContent("mixed");
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(project), Encoding.UTF8, "application/json");
+            multipartContent.Add(jsonContent);
+
+            if (project.ImageId != null)
+            {
+                var tuple = await _imageService.GetImageById(project.ImageId, CancellationToken.None);
+                
+                var fileContent = new ByteArrayContent(tuple.Item2.ToArray());
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(tuple.Item1.MimeType);
+                multipartContent.Add(fileContent);
+                return new Tuple<Image?, MultipartContent>(tuple.Item1, multipartContent);
+            }
+
+            await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
+            await _projectRepository.SaveChanges();
+
+            return new Tuple<Image?, MultipartContent>(null, multipartContent);
         }
 
         public async Task<IReadOnlyList<Project>> GetAllProjects(

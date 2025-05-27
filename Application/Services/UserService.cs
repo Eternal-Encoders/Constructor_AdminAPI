@@ -1,4 +1,5 @@
-﻿using Constructor_API.Core.Repositories;
+﻿using AutoMapper;
+using Constructor_API.Core.Repositories;
 using Constructor_API.Helpers.Exceptions;
 using Constructor_API.Models.DTOs;
 using Constructor_API.Models.DTOs.Create;
@@ -22,14 +23,16 @@ namespace Constructor_API.Application.Services
         readonly IProjectUserRepository _projectUserRepository;
         readonly IProjectRepository _projectRepository;
         readonly IConfiguration _configuration;
+        IMapper _mapper;
 
         public UserService(IProjectRepository projectRepository, IUserRepository userRepository, IConfiguration configuration,
-            IProjectUserRepository projectuserRepository)
+            IProjectUserRepository projectuserRepository, IMapper mapper)
         {
             _projectRepository = projectRepository;
             _userRepository = userRepository;
             _configuration = configuration;
             _projectUserRepository = projectuserRepository;
+            _mapper = mapper;
         }
 
         public async Task<string> GenerateToken(User user, CancellationToken cancellationToken)
@@ -55,8 +58,8 @@ namespace Constructor_API.Application.Services
         {
             if ((await _userRepository.CountAsync(u => u.Email == userDto.Email, cancellationToken)) != 0)
                 throw new AlreadyExistsException($"User with email {userDto.Email} already exists");
-            if ((await _userRepository.CountAsync(u => u.Nickname == userDto.Nickname, cancellationToken)) != 0)
-                throw new AlreadyExistsException($"User with nickname {userDto.Nickname} already exists");
+            //if ((await _userRepository.CountAsync(u => u.Nickname == userDto.Nickname, cancellationToken)) != 0)
+            //    throw new AlreadyExistsException($"User with nickname {userDto.Nickname} already exists");
 
             var user = new User
             {
@@ -92,10 +95,12 @@ namespace Constructor_API.Application.Services
             return await _userRepository.ListAsync(cancellationToken);
         }
 
-        public async Task<User> GetUserById(string id, CancellationToken cancellationToken)
+        public async Task<GetUserDto> GetUserById(string id, CancellationToken cancellationToken)
         {
-            return await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
                 ?? throw new NotFoundException("User not found");
+
+            return _mapper.Map<GetUserDto>(user);
         }
 
         public async Task<IReadOnlyList<GetProjectDto>> GetProjectsByUser(string id, CancellationToken cancellationToken)

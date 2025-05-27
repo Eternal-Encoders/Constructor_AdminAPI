@@ -8,8 +8,6 @@ namespace Constructor_API.Models.DTOs.Read
     public class FloorForPathDto
     {
         [BsonElement("_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        [ObjectId]
         public string Id { get; set; }
 
         [BsonElement("index")]

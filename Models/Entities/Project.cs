@@ -12,22 +12,18 @@ namespace Constructor_API.Models.Entities
     {
         [BsonId]
         [BsonElement("_id")]
-        [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
         [BsonElement("name")]
-        [JsonPropertyName("name")]
         [BsonRequired]
         public string Name { get; set; }
 
         [BsonElement("url")]
-        [JsonPropertyName("url")]
         [BsonRequired]
         public string Url { get; set; }
 
-        [BsonElement("buildings")]
-        [JsonPropertyName("buildings")]
+        [BsonElement("building_ids")]
         [BsonRequired]
         public string[] BuildingIds { get; set; }
 
@@ -36,28 +32,21 @@ namespace Constructor_API.Models.Entities
         //[BsonRequired]
         //public string[] ProjectUserIds { get; set; }
 
-        [JsonPropertyName("description")]
         [BsonElement("description")]
         public string? Description { get; set; }
 
-        [ObjectId]
-        [JsonPropertyName("image_id")]
         [BsonElement("image_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? ImageId { get; set; }
 
         [BsonElement("created_at")]
-        [JsonPropertyName("created_at")]
         [BsonRequired]
         public DateTime CreatedAt { get; set; }
 
         [BsonElement("updated_at")]
-        [JsonPropertyName("updated_at")]
         [BsonRequired]
         public DateTime UpdatedAt { get; set; }
 
         [BsonElement("custom_graph_point_types")]
-        [JsonPropertyName("custom_graph_point_types")]
         [BsonIgnoreIfNull]
         public GraphPointType[]? CustomGraphPointTypes { get; set; }
     }

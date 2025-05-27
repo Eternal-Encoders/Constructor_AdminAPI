@@ -488,7 +488,6 @@ namespace Constructor_API.Application.Services
             prevFloor.Height = floorDto.Height ?? prevFloor.Height;
             prevFloor.Decorations = floorDto.Decorations ?? prevFloor.Decorations;
             prevFloor.UpdatedAt = now;
-            prevFloor.Forces = floorDto.Forces ?? prevFloor.Forces;
 
             if (floorDto.Rooms != null)
             {
@@ -747,7 +746,7 @@ namespace Constructor_API.Application.Services
                 foreach (var transition in updatedTransitions)
                 {
                     //Если у перехода есть ровно одна ссылка на точку на этаже
-                    if (transition.LinkIds.Intersect(prevFloor.GraphPoints).Count() == 1)
+                    if (transition.LinkIds.Intersect(prevFloor.GraphPoints).Count() <= 1)
                         await _floorsTransitionRepository.UpdateAsync(s => 
                             s.Id == transition.Id, transition, cancellationToken);
                     //Иначе исключение

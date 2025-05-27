@@ -23,6 +23,7 @@ namespace Constructor_API.Controllers
         /// <param name="toId">ID конечной точки маршрута</param>
         /// <returns></returns>
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetPath([FromQuery] string fromId,
             [FromQuery] string toId)
         {

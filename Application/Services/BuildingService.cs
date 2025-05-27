@@ -6,6 +6,9 @@ using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.DTOs.Update;
 using Constructor_API.Models.Entities;
 using MongoDB.Bson;
+using System.Text.Json;
+using System.Text;
+using System.Net.Http.Headers;
 
 namespace Constructor_API.Application.Services
 {
@@ -17,10 +20,12 @@ namespace Constructor_API.Application.Services
         IGraphPointRepository _graphPointRepository;
         IFloorsTransitionRepository _floorConnectionRepository;
         IMapper _mapper;
+        ImageService _imageService;
 
         public BuildingService(IBuildingRepository buildingRepository, IMapper mapper,
             IProjectRepository projectRepository, IFloorRepository floorRepository,
-            IGraphPointRepository graphPointRepository, IFloorsTransitionRepository floorConnectionRepository)
+            IGraphPointRepository graphPointRepository, IFloorsTransitionRepository floorConnectionRepository,
+            ImageService imageService)
         {
             _buildingRepository = buildingRepository;
             _mapper = mapper;
@@ -28,9 +33,10 @@ namespace Constructor_API.Application.Services
             _floorRepository = floorRepository;
             _graphPointRepository = graphPointRepository;
             _floorConnectionRepository = floorConnectionRepository;
+            _imageService = imageService;
         }
 
-        public async Task<Building> InsertBuilding(CreateBuildingDto buildingDto, CancellationToken cancellationToken)
+        public async Task<Building> InsertBuilding(CreateBuildingDto buildingDto, IFormFile file, CancellationToken cancellationToken)
         {
             var building = _mapper.Map<Building>(buildingDto);
             building.Id = ObjectId.GenerateNewId().ToString();
@@ -48,6 +54,13 @@ namespace Constructor_API.Application.Services
                 await _projectRepository.UpdateAsync(g => g.Id == buildingDto.ProjectId, project, cancellationToken);
             }
 
+            if (file != null)
+            {
+                var image = await _imageService.InsertImage(file, cancellationToken);
+                building.ImageId = image.Id;
+            }
+
+
             await _buildingRepository.AddAsync(building, cancellationToken);
             await _buildingRepository.SaveChanges();
 
@@ -58,6 +71,28 @@ namespace Constructor_API.Application.Services
         {
             return await _buildingRepository.FirstGetBuildingDtoOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Building is not found");
+        }
+
+        public async Task<Tuple<Image?, MultipartContent>> GetBuildingByIdMultipart(string id, CancellationToken cancellationToken)
+        {
+            var building = await _buildingRepository.FirstGetBuildingDtoOrDefaultAsync(b => b.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Building is not found");
+
+            MultipartContent multipartContent = new MultipartContent("mixed");
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(building), Encoding.UTF8, "application/json");
+            multipartContent.Add(jsonContent);
+
+            if (building.ImageId != null)
+            {
+                var tuple = await _imageService.GetImageById(building.ImageId, CancellationToken.None);
+                var fileContent = new ByteArrayContent(tuple.Item2.ToArray());
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(tuple.Item1.MimeType);
+                multipartContent.Add(fileContent);
+                return new Tuple<Image?, MultipartContent>(tuple.Item1, multipartContent);
+            }
+
+            return new Tuple<Image?, MultipartContent>(null, multipartContent);
         }
 
         public async Task<IReadOnlyList<Floor>> GetFloorsByBuilding(string buildingId, CancellationToken cancellationToken)

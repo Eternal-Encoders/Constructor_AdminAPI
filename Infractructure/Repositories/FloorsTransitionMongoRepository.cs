@@ -21,7 +21,7 @@ namespace Constructor_API.Infractructure.Repositories
             var transition = await base.FirstOrDefaultAsync(predicate, cancellationToken);
             if (transition != null)
             {
-                var updateSettings = new BsonDocument("$set", new BsonDocument("TransitionId", null));
+                var updateSettings = new BsonDocument("$set", new BsonDocument("TransitionId", BsonNull.Value));
                 await base.AddCommand(async (IClientSessionHandle s) => await graphPointCollection.UpdateManyAsync(
                     gp => gp.TransitionId == transition.Id, updateSettings));
 

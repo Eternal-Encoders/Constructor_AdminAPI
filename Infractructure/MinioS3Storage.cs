@@ -1,7 +1,6 @@
 ﻿using Constructor_API.Core.Shared.S3;
 using Minio;
 using Minio.DataModel.Args;
-using System.Security.AccessControl;
 
 namespace Constructor_API.Infractructure
 {

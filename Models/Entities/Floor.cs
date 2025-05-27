@@ -13,29 +13,23 @@ namespace Constructor_API.Models.Entities
     {
         [BsonId]
         [BsonElement("_id")]
-        [JsonPropertyName("id")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
         [BsonElement("index")]
-        [JsonPropertyName("index")]
         [BsonRequired]
         public int Index { get; set; }
 
         [BsonElement("name")]
-        [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [BsonElement("building_id")]
-        [JsonPropertyName("building_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
         [BsonRequired]
-        [ObjectId]
         public string BuildingId { get; set; }
 
-        [BsonIgnore]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Building? Building { get; set; }
+        //[BsonIgnore]
+        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        //public Building? Building { get; set; }
 
         //[BsonElement("image_ids")]
         //[JsonPropertyName("image_ids")]
@@ -43,57 +37,43 @@ namespace Constructor_API.Models.Entities
         //[BsonRepresentation(BsonType.ObjectId)]
         //public string[] ImageIds { get; set; }
 
-        //[BsonElement("images")]
-        //[JsonPropertyName("images")]
-        //[BsonIgnoreIfNull]
-        //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        //public string[]? Images { get; set; }
+        [BsonElement("image_id")]
+        [BsonIgnoreIfNull]
+        public string? ImageId { get; set; }
 
         [BsonElement("width")]
-        [JsonPropertyName("width")]
         [BsonRequired]
         public int Width { get; set; }
 
         [BsonElement("height")]
-        [JsonPropertyName("height")]
         [BsonRequired]
         public int Height { get; set; }
 
         [BsonElement("decorations")]
-        [JsonPropertyName("decorations")]
-        //[BsonRequired]
+        [BsonRequired]
         public Decoration[] Decorations { get; set; }
 
         [BsonElement("rooms")]
-        [JsonPropertyName("rooms")]
-        //[BsonRequired]
+        [BsonRequired]
         public Room[] Rooms { get; set; }
 
         [BsonElement("graph")]
-        [JsonPropertyName("graph")]
         [BsonRequired]
-        [ObjectId]
         public string[] GraphPoints { get; set; }
 
         [BsonElement("forces")]
-        [JsonPropertyName("forces")]
         [BsonIgnoreIfNull]
         public Forces[]? Forces { get; set; }
 
         [BsonElement("created_at")]
-        [JsonPropertyName("created_at")]
         [BsonRequired]
         public DateTime CreatedAt { get; set; }
 
         [BsonElement("updated_at")]
-        [JsonPropertyName("updated_at")]
         [BsonRequired]
         public DateTime UpdatedAt { get; set; }
 
         [BsonElement("updated_by")]
-        [JsonPropertyName("updated_by")]
-        [ObjectId]
         public string? UpdatedBy { get; set; }
     }
 }

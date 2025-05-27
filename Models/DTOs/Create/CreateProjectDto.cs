@@ -9,7 +9,7 @@ namespace Constructor_API.Models.DTOs.Create
         [Required]
         [JsonPropertyName("name")]
         [MinLength(1)]
-        [MaxLength(255)]
+        [MaxLength(256)]
         public string? Name { get; set; }
 
         [JsonPropertyName("description")]
