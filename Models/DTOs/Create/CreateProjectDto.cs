@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -15,8 +16,10 @@ namespace Constructor_API.Models.DTOs.Create
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        //[JsonPropertyName("image")]
-        //public CreateImageDto? Image { get; set; }
+        [Required]
+        [DefaultValue("")]
+        [JsonPropertyName("icon")]
+        public string? Icon { get; set; }
 
         //[Required]
         //[JsonPropertyName("creator_id")]

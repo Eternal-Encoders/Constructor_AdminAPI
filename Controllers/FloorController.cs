@@ -28,7 +28,7 @@ namespace Constructor_API.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PostFloorFromBody([FromBody] CreateFloorDto? floorDto)
+        public async Task<IActionResult> PostFloor([FromBody] CreateFloorDto? floorDto)
         {
             if (floorDto == null) return BadRequest("Wrong input");
 
@@ -57,7 +57,7 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает этаж по ID
+        /// Возвращает этаж по ID с точками маршрутного графа
         /// </summary>
         /// <param name="id">ID этажа, 24 символа</param>
         /// <returns></returns>
@@ -74,9 +74,38 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            var floor = await _floorService.GetFloorById(id, CancellationToken.None);
+            var floor = await _floorService.GetFloorByIdWithGraphPoints(id, CancellationToken.None);
 
             return Ok(floor);
+        }
+
+        /// <summary>
+        /// Возвращает этаж по ID с точками маршрутного графа, тестовая версия отправки с файлом
+        /// </summary>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <returns></returns>
+        [HttpGet("{id}/multipart")]
+        [Authorize]
+        public async Task<IActionResult> GetFloorByIdMultipart(string? id)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var floor = await _floorService.GetFloorByIdWithGraphPointsMultipart(id, CancellationToken.None);
+
+            if (floor.Item1 != null)
+                return new FileStreamResult(floor.Item2.ReadAsStreamAsync().Result, "multipart/mixed")
+                {
+                    FileDownloadName = floor.Item1.Name
+                };
+
+            else return new FileStreamResult(floor.Item2.ReadAsStreamAsync().Result, "multipart/mixed");
         }
 
         /// <summary>
@@ -167,7 +196,31 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            await _floorService.UpdateFloor(id, floorDto, CancellationToken.None);
+            await _floorService.UpdateFloor(id, floorDto, null, CancellationToken.None);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Обновляет тело этажа
+        /// </summary>
+        /// <param name="id">D этажа, 24 символа</param>
+        /// <param name="floorDto">Тело этажа</param>
+        /// <returns></returns>
+        [HttpPatch("{id}/multipart")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFloorMultipart(string id, IFormFile file, [FromForm] UpdateFloorDto floorDto)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Floor");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _floorService.UpdateFloor(id, floorDto, file, CancellationToken.None);
 
             return Ok();
         }

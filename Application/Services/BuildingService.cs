@@ -171,6 +171,9 @@ namespace Constructor_API.Application.Services
             var project = await _projectRepository.FirstOrDefaultAsync(p => p.Id == building.ProjectId, cancellationToken)
                 ?? throw new NotFoundException($"Project is not found");
 
+            if (building.ImageId != null && building.ImageId != "")
+                await _imageService.DeleteImageById(building.ImageId, cancellationToken);
+
             project.BuildingIds = project.BuildingIds.Where(b => b != buildingId).ToArray();
             project.UpdatedAt = DateTime.UtcNow;
             await _projectRepository.UpdateAsync(p => p.Id == project.Id, project, cancellationToken);
@@ -192,7 +195,7 @@ namespace Constructor_API.Application.Services
             await _buildingRepository.SaveChanges();
         }
 
-        public async Task UpdateBuilding(string buildingId, UpdateBuildingDto buildingDto, CancellationToken cancellationToken)
+        public async Task UpdateBuilding(string buildingId, UpdateBuildingDto buildingDto, IFormFile file, CancellationToken cancellationToken)
         {
             var prevBuilding = await _buildingRepository.FirstOrDefaultAsync(b =>
                 b.Id == buildingId, cancellationToken) ?? throw new NotFoundException($"Project is not found");
@@ -203,7 +206,14 @@ namespace Constructor_API.Application.Services
             prevBuilding.Name = buildingDto.Name ?? prevBuilding.Name;
             prevBuilding.DisplayableName = buildingDto.DisplayableName ?? prevBuilding.DisplayableName;
             prevBuilding.Url = buildingDto.Url ?? prevBuilding.Url;
-            //prevBuilding.ImageId = buildingDto.ImageId ?? prevBuilding.ImageId;
+
+            if (file != null)
+            {
+                if (prevBuilding.ImageId != null && prevBuilding.ImageId != "")
+                    await _imageService.DeleteImageById(prevBuilding.ImageId, cancellationToken);
+                var image = await _imageService.InsertImage(file, cancellationToken);
+                prevBuilding.ImageId = image.Id;
+            }
 
             if (buildingDto.ProjectId != null)
                 if (await _projectRepository.FirstOrDefaultAsync(

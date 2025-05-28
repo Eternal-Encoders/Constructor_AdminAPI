@@ -36,6 +36,10 @@ namespace Constructor_API.Models.DTOs.Read
         public int? Height { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("background")]
+        public BackgroundImage? Background { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("decorations")]
         public Decoration[]? Decorations { get; set; }
 

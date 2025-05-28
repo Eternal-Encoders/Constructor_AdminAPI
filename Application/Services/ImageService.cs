@@ -12,13 +12,15 @@ namespace Constructor_API.Application.Services
     {
         IS3Storage _storage;
         IImageRepository _imageRepository;
+        //IIconRepository _iconRepository;
         IConfiguration _configuration;
 
-        public ImageService(IS3Storage storage, IImageRepository imageRepository, IConfiguration configuration) 
+        public ImageService(IS3Storage storage, IImageRepository imageRepository, /*IIconRepository iconRepository,*/ IConfiguration configuration) 
         { 
             _storage = storage;
             _imageRepository = imageRepository;
             _configuration = configuration;
+            //_iconRepository = iconRepository;
         }
 
         public async Task<Image> InsertImage(IFormFile file, CancellationToken cancellationToken)
@@ -95,10 +97,31 @@ namespace Constructor_API.Application.Services
                     throw new Exception("Stream is not readable");
 
                 return new Tuple<Image, MemoryStream>(image, fileStream);
-                //var bytes = fileStream.ToArray();
             }
             else throw new NotFoundException($"File with id \"{id}\" is not found");
         }
+
+        //public async Task<Tuple<Icon, MemoryStream>> GetIconById(string id, CancellationToken cancellationToken)
+        //{
+        //    if (await ImageExistsById(id))
+        //    {
+        //        var icon = await _iconRepository.FirstAsync(i => i.Id == id, cancellationToken);
+
+        //        using MemoryStream? fileStream = await _storage.DownloadFileAsync(
+        //            _configuration["Bucket1"],
+        //            icon.Filename,
+        //            cancellationToken);
+
+        //        if (fileStream == null)
+        //            throw new NotFoundException($"Icon \"{icon.Filename}\" is not found");
+
+        //        if (!fileStream.CanRead)
+        //            throw new Exception("Stream is not readable");
+
+        //        return new Tuple<Icon, MemoryStream>(icon, fileStream);
+        //    }
+        //    else throw new NotFoundException($"Icon with name \"{id}\" is not found");
+        //}
 
         public async Task<bool> ImageExistsByName(string fileName)
         {
@@ -110,7 +133,7 @@ namespace Constructor_API.Application.Services
             return await _imageRepository.CountAsync(i => i.Id == id, CancellationToken.None) != 0;
         }
 
-        public async Task DeleteImage(string fileName, CancellationToken cancellationToken)
+        public async Task DeleteImageByName(string fileName, CancellationToken cancellationToken)
         {
             if (await ImageExistsByName(fileName))
             {
@@ -120,6 +143,20 @@ namespace Constructor_API.Application.Services
                 await _storage.DeleteFileAsync(_configuration["Bucket1"], fileName, cancellationToken);
             }
             else throw new NotFoundException($"File \"{fileName}\" is not found");
+        }
+
+        public async Task DeleteImageById(string id, CancellationToken cancellationToken)
+        {
+            if (await ImageExistsById(id))
+            {
+
+                await _imageRepository.RemoveAsync(i => i.Id == id, cancellationToken);
+                await _imageRepository.SaveChanges();
+
+                await _storage.DeleteFileAsync(_configuration["Bucket1"],
+                    (await _imageRepository.FirstAsync(i => i.Id == id, cancellationToken)).Name, cancellationToken);
+            }
+            else throw new NotFoundException($"File \"{id}\" is not found");
         }
     }
 }

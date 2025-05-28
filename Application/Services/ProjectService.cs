@@ -42,7 +42,6 @@ namespace Constructor_API.Application.Services
         public async Task<GetProjectDto> InsertProject(
             CreateProjectDto projectDto, 
             string userId,
-            IFormFile? file,
             CancellationToken cancellationToken)
         {
             if (await _userRepository.CountAsync(u => u.Id == userId, cancellationToken) == 0)
@@ -53,11 +52,6 @@ namespace Constructor_API.Application.Services
             project.BuildingIds = [];
             if (await _projectRepository.CountAsync(p => p.Url == projectDto.Url, cancellationToken) != 0)
                 throw new AlreadyExistsException($"Project with url {projectDto.Url} already exists");
-            if (file != null)
-            {
-                var image = await _imageService.InsertImage(file, cancellationToken);
-                project.ImageId = image.Id;
-            }
             project.Id = ObjectId.GenerateNewId().ToString();
 
             var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
@@ -98,36 +92,47 @@ namespace Constructor_API.Application.Services
             return project;
         }
 
-        public async Task<Tuple<Image?, MultipartContent>> GetProjectByIdMultipart(
-            string id, string userId, CancellationToken cancellationToken)
-        {
-            var project = await _projectRepository.FirstGetProjectDtoOrDefaultAsync(p => p.Id == id, cancellationToken)
-                ?? throw new NotFoundException("Project is not found");
-            var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
-                ?? throw new NotFoundException("User is not found");
+        //public async Task<Tuple<Image?, MultipartContent>> GetProjectByIdMultipart(
+        //    string id, string userId, CancellationToken cancellationToken)
+        //{
+        //    var project = await _projectRepository.FirstGetProjectDtoOrDefaultAsync(p => p.Id == id, cancellationToken)
+        //        ?? throw new NotFoundException("Project is not found");
+        //    var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+        //        ?? throw new NotFoundException("User is not found");
 
-            user.SelectedProject = id;
+        //    user.SelectedProject = id;
 
-            MultipartContent multipartContent = new MultipartContent("mixed");
+        //    MultipartContent multipartContent = new MultipartContent("mixed");
 
-            var jsonContent = new StringContent(JsonSerializer.Serialize(project), Encoding.UTF8, "application/json");
-            multipartContent.Add(jsonContent);
+        //    var jsonContent = new StringContent(JsonSerializer.Serialize(project), Encoding.UTF8, "application/json");
+        //    multipartContent.Add(jsonContent);
 
-            if (project.ImageId != null)
-            {
-                var tuple = await _imageService.GetImageById(project.ImageId, CancellationToken.None);
-                
-                var fileContent = new ByteArrayContent(tuple.Item2.ToArray());
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(tuple.Item1.MimeType);
-                multipartContent.Add(fileContent);
-                return new Tuple<Image?, MultipartContent>(tuple.Item1, multipartContent);
-            }
+        //    if (project.Icon != null)
+        //    {
+        //        if (project.Icon != "")
+        //        {
+        //            var tuple = await _imageService.GetIconById(project.Icon, CancellationToken.None);
 
-            await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
-            await _projectRepository.SaveChanges();
+        //            var fileContent = new ByteArrayContent(tuple.Item2.ToArray());
+        //            fileContent.Headers.ContentType = new MediaTypeHeaderValue(tuple.Item1.MimeType);
+        //            multipartContent.Add(fileContent);
+        //            return new Tuple<Image?, MultipartContent>(tuple.Item1, multipartContent);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //Если не было значения
+        //        var updatedProject = await _projectRepository.FirstAsync(p => p.Id == id, cancellationToken)
+        //            ?? throw new NotFoundException("Project is not found");
+        //        updatedProject.Icon = "";
+        //        await _projectRepository.UpdateAsync(p => p.Id == id, updatedProject, cancellationToken);
+        //    }
 
-            return new Tuple<Image?, MultipartContent>(null, multipartContent);
-        }
+        //    await _userRepository.UpdateAsync(u => u.Id == userId, user, cancellationToken);
+        //    await _projectRepository.SaveChanges();
+
+        //    return new Tuple<Image?, MultipartContent>(null, multipartContent);
+        //}
 
         public async Task<IReadOnlyList<Project>> GetAllProjects(
             CancellationToken cancellationToken)

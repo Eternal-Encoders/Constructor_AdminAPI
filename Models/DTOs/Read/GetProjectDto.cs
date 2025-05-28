@@ -23,8 +23,8 @@ namespace Constructor_API.Models.DTOs.Read
         public string? Description { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("image_id")]
-        public string? ImageId { get; set; }
+        [JsonPropertyName("icon")]
+        public string? Icon { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("created_at")]

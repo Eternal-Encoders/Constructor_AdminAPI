@@ -22,11 +22,11 @@ namespace Constructor_API.Models.Objects
             }
         }
 
-        //[BsonElement("identifier")]
-        //[JsonPropertyName("identifier")]
-        //[Required]
-        //[BsonRequired]
-        //public string? Identifier { get; set; }
+        [BsonElement("value")]
+        [JsonPropertyName("value")]
+        [Required]
+        [BsonRequired]
+        public string? Value { get; set; }
 
         [BsonElement("x")]
         [JsonPropertyName("x")]

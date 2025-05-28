@@ -37,9 +37,9 @@ namespace Constructor_API.Models.Entities
         //[BsonRepresentation(BsonType.ObjectId)]
         //public string[] ImageIds { get; set; }
 
-        [BsonElement("image_id")]
+        [BsonElement("background")]
         [BsonIgnoreIfNull]
-        public string? ImageId { get; set; }
+        public BackgroundImage? Background { get; set; }
 
         [BsonElement("width")]
         [BsonRequired]

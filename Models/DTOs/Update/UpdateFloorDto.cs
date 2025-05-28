@@ -1,6 +1,7 @@
 ﻿using Constructor_API.Helpers.Attributes;
 using Constructor_API.Models.DTOs.Create;
 using Constructor_API.Models.Objects;
+using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -34,6 +35,10 @@ namespace Constructor_API.Models.DTOs.Update
         [JsonPropertyName("height")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Height { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("background")]
+        public BackgroundImage? Background { get; set; }
 
         [JsonPropertyName("decorations")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

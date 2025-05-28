@@ -35,8 +35,8 @@ namespace Constructor_API.Models.Entities
         [BsonElement("description")]
         public string? Description { get; set; }
 
-        [BsonElement("image_id")]
-        public string? ImageId { get; set; }
+        [BsonElement("icon")]
+        public string? Icon { get; set; }
 
         [BsonElement("created_at")]
         [BsonRequired]

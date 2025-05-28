@@ -246,7 +246,31 @@ namespace Constructor_API.Controllers
                 return Forbid();
             }
 
-            await _buildingService.UpdateBuilding(id, buildingDto, CancellationToken.None);
+            await _buildingService.UpdateBuilding(id, buildingDto, null, CancellationToken.None);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Обновляет тело здания, тестовая версия с отправкой файла
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="buildingDto"></param>
+        /// <returns></returns>
+        [HttpPatch("multipart")]
+        [Authorize]
+        public async Task<IActionResult> UpdateBuildingMultipart(string id, IFormFile file, [FromForm] UpdateBuildingDto buildingDto)
+        {
+            if (id == null) return BadRequest("Wrong input");
+            if (!ObjectId.TryParse(id, out _)) return BadRequest("Wrong input: specified ID is not a valid 24 digit hex string");
+
+            var auth = await _authorizationService.AuthorizeAsync(User, id, "Building");
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            await _buildingService.UpdateBuilding(id, buildingDto, file, CancellationToken.None);
 
             return Ok();
         }

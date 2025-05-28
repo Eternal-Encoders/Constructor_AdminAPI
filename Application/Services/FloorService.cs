@@ -11,7 +11,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Linq;
+using System.Text.Json;
+using System.Text;
 using System.Threading;
+using System.Net.Http.Headers;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Constructor_API.Application.Services
 {
@@ -24,6 +28,7 @@ namespace Constructor_API.Application.Services
         IProjectRepository _projectRepository;
         IPredefinedGraphPointTypeRepository _predefinedGraphPointTypeRepository;
         IMapper _mapper;
+        ImageService _imageService;
 
         public FloorService(IFloorRepository floorRepository,
                             IGraphPointRepository graphPointRepository,
@@ -31,7 +36,8 @@ namespace Constructor_API.Application.Services
                             IBuildingRepository buildingRepository,
                             IMapper mapper,
                             IProjectRepository projectRepository,
-                            IPredefinedGraphPointTypeRepository predefinedGraphPointTypeRepository)
+                            IPredefinedGraphPointTypeRepository predefinedGraphPointTypeRepository,
+                            ImageService imageService)
         {
             _floorRepository = floorRepository;
             _graphPointRepository = graphPointRepository;
@@ -40,6 +46,7 @@ namespace Constructor_API.Application.Services
             _mapper = mapper;
             _projectRepository = projectRepository;
             _predefinedGraphPointTypeRepository = predefinedGraphPointTypeRepository;
+            _imageService = imageService;
         }
 
         public async Task<Tuple<Dictionary<string, string[]>, Room[]>> ValidateRooms(
@@ -431,6 +438,40 @@ namespace Constructor_API.Application.Services
             return res;
         }
 
+        public async Task<Tuple<Models.Entities.Image?, MultipartContent>> GetFloorByIdWithGraphPointsMultipart(string id,
+            CancellationToken cancellationToken)
+        {
+            var floor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Floor is not found");
+            GetFloorDto res = _mapper.Map<GetFloorDto>(floor);
+
+            var building = await _buildingRepository.FirstOrDefaultAsync(b =>
+                b.Id == floor.BuildingId, cancellationToken) ?? throw new NotFoundException("Building is not found");
+
+            building.LastFloorId = floor.Id;
+            await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
+
+            res.GraphPoints = [.. await _graphPointRepository.ListAsync(g => g.FloorId == floor.Id, cancellationToken)];
+
+            await _floorRepository.SaveChanges();
+
+            MultipartContent multipartContent = new MultipartContent("mixed");
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(res), Encoding.UTF8, "application/json");
+            multipartContent.Add(jsonContent);
+
+            if (floor.Background != null)
+            {
+                var tuple = await _imageService.GetImageById(floor.Background.ImageId, CancellationToken.None);
+                var fileContent = new ByteArrayContent(tuple.Item2.ToArray());
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(tuple.Item1.MimeType);
+                multipartContent.Add(fileContent);
+                return new Tuple<Models.Entities.Image?, MultipartContent>(tuple.Item1, multipartContent);
+            }
+
+            return new Tuple<Models.Entities.Image?, MultipartContent>(null, multipartContent);
+        }
+
         public async Task DeleteFloor(string id, CancellationToken cancellationToken)
         {
             var floor = await _floorRepository.FirstOrDefaultAsync(b => b.Id == id, cancellationToken)
@@ -443,6 +484,9 @@ namespace Constructor_API.Application.Services
                 building.LastFloorId = "";
                 await _buildingRepository.UpdateAsync(b => b.Id == floor.BuildingId, building, cancellationToken);
             }
+
+            if (floor.Background != null)
+                await _imageService.DeleteImageById(floor.Background.ImageId, cancellationToken);
 
             foreach (var point in floor.GraphPoints)
             {
@@ -462,7 +506,7 @@ namespace Constructor_API.Application.Services
             await _floorRepository.SaveChanges();
         }
 
-        public async Task UpdateFloor(string id, UpdateFloorDto floorDto, CancellationToken cancellationToken)
+        public async Task UpdateFloor(string id, UpdateFloorDto floorDto, IFormFile file, CancellationToken cancellationToken)
         {
             var prevFloor = await _floorRepository.FirstOrDefaultAsync(f => f.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Floor is not found");
@@ -475,6 +519,30 @@ namespace Constructor_API.Application.Services
             DateTime now = DateTime.UtcNow;
             Dictionary<string, string[]> graphIdsDict = [];
             building.LastFloorId = prevFloor.Id;
+
+            if (file != null && floorDto.Background != null)
+            {
+                if (prevFloor.Background != null)
+                    await _imageService.DeleteImageById(prevFloor.Background.ImageId, cancellationToken);
+                var image = await _imageService.InsertImage(file, cancellationToken);
+                prevFloor.Background = new BackgroundImage
+                {
+                    ImageId = image.Id, 
+                    X = floorDto.Background.X,
+                    Y = floorDto.Background.Y,
+                    //Width = 10,
+                    //Height = 10,
+                    Multiplier = floorDto.Background.Multiplier,
+                };
+            }
+            else if (floorDto.Background != null && floorDto.Background.ImageId == "")
+                await _imageService.DeleteImageById(prevFloor.Background.ImageId, cancellationToken);
+            else if (file == null && floorDto.Background.ImageId == prevFloor.Background.ImageId)
+            {
+                prevFloor.Background.X = floorDto.Background.X;
+                prevFloor.Background.Y = floorDto.Background.Y;
+                prevFloor.Background.Multiplier = floorDto.Background.Multiplier;
+            }
 
             if (floorDto.BuildingId != null && floorDto.BuildingId != prevFloor.BuildingId)
             {

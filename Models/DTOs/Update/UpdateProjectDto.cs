@@ -12,12 +12,12 @@ namespace Constructor_API.Models.DTOs.Update
         [BsonElement("name")]
         [JsonPropertyName("name")]
         [MinLength(1)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [BsonElement("url")]
         [JsonPropertyName("url")]
         [MinLength(1)]
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         [JsonPropertyName("description")]
         [BsonElement("description")]
@@ -28,6 +28,10 @@ namespace Constructor_API.Models.DTOs.Update
         //[BsonElement("image_id")]
         //[BsonRepresentation(BsonType.ObjectId)]
         //public string? ImageId { get; set; }
+
+        [JsonPropertyName("icon")]
+        [BsonElement("icon")]
+        public string? Icon { get; set; }
 
         [BsonElement("custom_graph_point_types")]
         [JsonPropertyName("custom_graph_point_types")]
