@@ -581,7 +581,10 @@ namespace Constructor_API.Application.Services
                     await _floorRepository.UpdateAsync(f => f.Id == floorForExchange.Id, floorForExchange, cancellationToken);
                     prevFloor.Index = (int)floorDto.Index;
                 }
+                await _buildingRepository.UpdateAsync(b => b.Id == prevFloor.BuildingId, building, cancellationToken);
             }
+            else
+                await _buildingRepository.UpdateAsync(b => b.Id == prevFloor.BuildingId, building, cancellationToken);
 
             prevFloor.Name = floorDto.Name ?? prevFloor.Name;
             //prevFloor.ImageIds = floorDto.ImageIds;

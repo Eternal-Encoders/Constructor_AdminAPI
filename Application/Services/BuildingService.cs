@@ -25,7 +25,7 @@ namespace Constructor_API.Application.Services
         public BuildingService(IBuildingRepository buildingRepository, IMapper mapper,
             IProjectRepository projectRepository, IFloorRepository floorRepository,
             IGraphPointRepository graphPointRepository, IFloorsTransitionRepository floorConnectionRepository,
-            ImageService imageService)
+            ImageService imageService, IUserRepository userRepository)
         {
             _buildingRepository = buildingRepository;
             _mapper = mapper;

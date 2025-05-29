@@ -50,5 +50,8 @@ namespace Constructor_API.Models.Entities
 
         [BsonElement("selected_project_id")]
         public string SelectedProject { get; set; }
+
+        [JsonPropertyName("last_building_id")]
+        public string LastBuilding { get; set; }
     }
 }

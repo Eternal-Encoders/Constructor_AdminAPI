@@ -13,12 +13,10 @@ namespace Constructor_API.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
-        private readonly IAuthorizationService _authorizationService;
 
-        public UserController(UserService userService, IAuthorizationService authorizationService)
+        public UserController(UserService userService)
         {
             _userService = userService;
-            _authorizationService = authorizationService;
         }
 
         /// <summary>

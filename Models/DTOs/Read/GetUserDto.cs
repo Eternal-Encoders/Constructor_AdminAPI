@@ -25,5 +25,8 @@ namespace Constructor_API.Models.DTOs.Read
 
         [JsonPropertyName("selected_project_id")]
         public string SelectedProject { get; set; }
+
+        [JsonPropertyName("last_building_id")]
+        public string LastBuilding { get; set; }
     }
 }
