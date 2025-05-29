@@ -38,6 +38,9 @@ namespace Constructor_API.Models.Entities
         [BsonElement("icon")]
         public string? Icon { get; set; }
 
+        [BsonElement("image_id")]
+        public string? ImageId { get; set; }
+
         [BsonElement("created_at")]
         [BsonRequired]
         public DateTime CreatedAt { get; set; }

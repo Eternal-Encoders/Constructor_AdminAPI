@@ -21,22 +21,19 @@ namespace Constructor_API.Application.Services
         IUserRepository _userRepository;
         IMapper _mapper;
         IProjectUserRepository _projectUserRepository;
-        ImageService _imageService;
 
         public ProjectService(
             IProjectRepository projectRepository, 
             IBuildingRepository buildingRepository,
             IUserRepository userRepository,
             IMapper mapper,
-            IProjectUserRepository projectUserRepository,
-            ImageService imageService)
+            IProjectUserRepository projectUserRepository)
         {
             _projectRepository = projectRepository;
             _buildingRepository = buildingRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _projectUserRepository = projectUserRepository;
-            _imageService = imageService;
         }
 
         public async Task<GetProjectDto> InsertProject(

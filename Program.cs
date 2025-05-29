@@ -168,7 +168,7 @@ app.UseExceptionHandler(builder =>
     builder.Run(async context =>
     {
         var err = context.Features.Get<IExceptionHandlerFeature>().Error;
-        context.Response.ContentType = "application/text";
+        context.Response.ContentType = "application/json";
         //err.
 
         if (err is ValidationException valException)
