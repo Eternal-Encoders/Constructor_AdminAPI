@@ -13,10 +13,10 @@ namespace Constructor_API.Models.DTOs.Create
         [MaxLength(256)]
         public string? Name { get; set; }
 
+        [DefaultValue("")]
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [Required]
         [DefaultValue("")]
         [JsonPropertyName("icon")]
         public string? Icon { get; set; }
