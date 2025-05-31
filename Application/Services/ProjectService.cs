@@ -48,6 +48,7 @@ namespace Constructor_API.Application.Services
             project.CustomGraphPointTypes = [];
             project.BuildingIds = [];
             project.Status = false;
+            project.Icon = "";
             if (await _projectRepository.CountAsync(p => p.Url == projectDto.Url, cancellationToken) != 0)
                 throw new AlreadyExistsException($"Project with url {projectDto.Url} already exists");
             project.Id = ObjectId.GenerateNewId().ToString();
@@ -172,6 +173,7 @@ namespace Constructor_API.Application.Services
             //prevProject.ImageId = projectDto.ImageId ?? prevProject.ImageId;
             prevProject.CustomGraphPointTypes = projectDto.CustomGraphPointTypes ?? prevProject.CustomGraphPointTypes;
             prevProject.UpdatedAt = DateTime.UtcNow;
+            prevProject.Icon = projectDto.Icon ?? prevProject.Icon;
 
             await _projectRepository.UpdateAsync(p => p.Id == id, prevProject, cancellationToken);
             await _projectRepository.SaveChanges();
