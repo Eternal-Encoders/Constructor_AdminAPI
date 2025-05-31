@@ -32,6 +32,7 @@ namespace Constructor_API.Infractructure.Repositories
                     Id = p.Id,
                     Name = p.Name,
                     Url = p.Url,
+                    Status = p.Status,
                     Description = p.Description,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
@@ -50,6 +51,8 @@ namespace Constructor_API.Infractructure.Repositories
                 {
                     Id = p.Id,
                     Name = p.Name,
+                    Status = p.Status,
+                    UpdatedAt = p.UpdatedAt,
                 })
                 .ToListAsync();
 

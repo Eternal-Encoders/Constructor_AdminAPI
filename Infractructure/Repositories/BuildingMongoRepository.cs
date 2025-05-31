@@ -28,6 +28,7 @@ namespace Constructor_API.Infractructure.Repositories
                 {
                     Id = b.Id,
                     Name = b.Name,
+                    Status = b.Status,
                 })
                 .ToListAsync();
 
@@ -61,6 +62,7 @@ namespace Constructor_API.Infractructure.Repositories
                 {
                     Id = b.Id,
                     Name = b.Name,
+                    Status = b.Status,
                     DisplayableName = b.DisplayableName,
                     ProjectId = b.ProjectId,
                     //FloorIds = b.FloorIds,

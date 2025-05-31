@@ -522,7 +522,7 @@ namespace Constructor_API.Application.Services
 
             if (file != null && floorDto.Background != null)
             {
-                if (prevFloor.Background != null)
+                if (prevFloor.Background != null && prevFloor.Background.ImageId != null)
                     await _imageService.DeleteImageById(prevFloor.Background.ImageId, cancellationToken);
                 var image = await _imageService.InsertImage(file, cancellationToken);
                 prevFloor.Background = new BackgroundImage
@@ -535,13 +535,17 @@ namespace Constructor_API.Application.Services
                     Multiplier = floorDto.Background.Multiplier,
                 };
             }
-            else if (floorDto.Background != null && floorDto.Background.ImageId == "")
-                await _imageService.DeleteImageById(prevFloor.Background.ImageId, cancellationToken);
-            else if (file == null && floorDto.Background.ImageId == prevFloor.Background.ImageId)
+            else if (floorDto.Background != null && floorDto.Background.ImageId == null)
             {
-                prevFloor.Background.X = floorDto.Background.X;
-                prevFloor.Background.Y = floorDto.Background.Y;
-                prevFloor.Background.Multiplier = floorDto.Background.Multiplier;
+                prevFloor.Background = null;
+                if (prevFloor.Background != null && prevFloor.Background.ImageId != null)
+                    await _imageService.DeleteImageById(prevFloor.Background.ImageId, cancellationToken);
+            }
+            else if (file == null && prevFloor.Background != null && floorDto.Background != null)
+            {
+                prevFloor.Background.X = floorDto.Background.X ?? prevFloor.Background.X;
+                prevFloor.Background.Y = floorDto.Background.Y ?? prevFloor.Background.Y;
+                prevFloor.Background.Multiplier = floorDto.Background.Multiplier ?? prevFloor.Background.Multiplier;
             }
 
             if (floorDto.BuildingId != null && floorDto.BuildingId != prevFloor.BuildingId)

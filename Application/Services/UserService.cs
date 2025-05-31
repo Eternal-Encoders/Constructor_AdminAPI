@@ -70,7 +70,8 @@ namespace Constructor_API.Application.Services
                 UpdatedAt = DateTime.UtcNow,
                 FeatureIds = [],
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
-                SelectedProject ="",
+                SelectedProject = "",
+                LastBuilding = "",
             };
 
             var token = await GenerateToken(user, cancellationToken);
@@ -99,6 +100,8 @@ namespace Constructor_API.Application.Services
         {
             var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
                 ?? throw new NotFoundException("User not found");
+
+            user.LastBuilding ??= "";
 
             return _mapper.Map<GetUserDto>(user);
         }

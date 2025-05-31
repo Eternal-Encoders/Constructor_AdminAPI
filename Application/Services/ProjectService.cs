@@ -47,6 +47,7 @@ namespace Constructor_API.Application.Services
             Project project = _mapper.Map<Project>(projectDto);
             project.CustomGraphPointTypes = [];
             project.BuildingIds = [];
+            project.Status = false;
             if (await _projectRepository.CountAsync(p => p.Url == projectDto.Url, cancellationToken) != 0)
                 throw new AlreadyExistsException($"Project with url {projectDto.Url} already exists");
             project.Id = ObjectId.GenerateNewId().ToString();

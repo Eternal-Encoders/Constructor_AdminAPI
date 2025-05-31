@@ -18,6 +18,9 @@ namespace Constructor_API.Models.DTOs.Read
         [JsonPropertyName("url")]
         public string? Url { get; set; }
 
+        [JsonPropertyName("status")]
+        public bool Status { get; set; }
+
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("description")]
         public string? Description { get; set; }

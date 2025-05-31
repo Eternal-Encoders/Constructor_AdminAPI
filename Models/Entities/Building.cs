@@ -39,6 +39,10 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string[]? FloorIds { get; set; }
 
+        [BsonElement("status")]
+        [BsonRequired]
+        public bool Status { get; set; }
+
         //[BsonIgnore]
         //[JsonPropertyName("floors")]
         //[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

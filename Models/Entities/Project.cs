@@ -27,6 +27,10 @@ namespace Constructor_API.Models.Entities
         [BsonRequired]
         public string[] BuildingIds { get; set; }
 
+        [BsonElement("status")]
+        [BsonRequired]
+        public bool Status { get; set; }
+
         //[BsonElement("project_users")]
         //[JsonPropertyName("project_users")]
         //[BsonRequired]

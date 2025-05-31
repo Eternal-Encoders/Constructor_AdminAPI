@@ -41,6 +41,7 @@ namespace Constructor_API.Application.Services
             var building = _mapper.Map<Building>(buildingDto);
             building.Id = ObjectId.GenerateNewId().ToString();
             building.FloorIds = [];
+            building.Status = false;
 
             var project = await _projectRepository.FirstAsync(g => g.Id == buildingDto.ProjectId, cancellationToken);
             if (project == null) throw new NotFoundException("Project is not found");
@@ -69,8 +70,10 @@ namespace Constructor_API.Application.Services
 
         public async Task<GetBuildingDto> GetBuildingById(string id, CancellationToken cancellationToken)
         {
-            return await _buildingRepository.FirstGetBuildingDtoOrDefaultAsync(b => b.Id == id, cancellationToken)
+            var building = await _buildingRepository.FirstGetBuildingDtoOrDefaultAsync(b => b.Id == id, cancellationToken)
                 ?? throw new NotFoundException("Building is not found");
+
+            return building;
         }
 
         public async Task<Tuple<Image?, MultipartContent>> GetBuildingByIdMultipart(string id, CancellationToken cancellationToken)

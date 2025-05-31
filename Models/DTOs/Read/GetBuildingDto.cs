@@ -25,6 +25,10 @@ namespace Constructor_API.Models.DTOs.Read
         public string? Name { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("status")]
+        public bool? Status { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("image_id")]
         public string? ImageId { get; set; }
 
