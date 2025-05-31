@@ -29,6 +29,7 @@ namespace Constructor_API.Infractructure.Repositories
                     Id = b.Id,
                     Name = b.Name,
                     Status = b.Status,
+                    UpdatedAt = b.UpdatedAt,
                 })
                 .ToListAsync();
 
