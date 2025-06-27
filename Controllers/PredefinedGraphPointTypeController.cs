@@ -15,6 +15,10 @@ namespace Constructor_API.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Возвращает массив всех предопределенных типов точек маршрутного графа
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllGraphPointTypes()

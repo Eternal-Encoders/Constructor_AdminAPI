@@ -58,7 +58,7 @@ namespace Constructor_API.Controllers
         //}
 
         /// <summary>
-        /// Возвращает точку графа по query-параметру
+        /// Возвращает точку графа по ID
         /// </summary>
         /// <param name="id">ID точки графа, 24 символа</param>
         /// <returns></returns>

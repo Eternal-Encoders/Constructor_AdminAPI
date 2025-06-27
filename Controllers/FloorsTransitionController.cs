@@ -24,7 +24,7 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет переход между этажами в БД
         /// </summary>
-        /// <param name="transitionDto">Объект, представляющий собой переход</param>
+        /// <param name="transitionDto">JSON объект, представляющий собой переход</param>
         /// <returns></returns>
         [HttpPost]
         [Authorize]
@@ -69,30 +69,6 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает массив переходов по query-параметру
-        /// </summary>
-        /// <param name="buildingName">Название здания</param>
-        /// <returns></returns>
-        //[HttpGet("stairs")]
-        //public async Task<IActionResult> GetStairsByBuilding([FromQuery] string? buildingName)
-        //{
-        //    if (buildingName == null) return BadRequest("Wrong input");
-
-        //    var res = await _stairService.GetStairsByBuilding(buildingName, CancellationToken.None);
-        //    if (!res.IsSuccessfull)
-        //    {
-        //        var err = res.GetErrors()[0];
-        //        return err._code switch
-        //        {
-        //            404 => NotFound(res.GetErrors()[0]._message),
-        //            _ => BadRequest(res.GetErrors()[0]._message),
-        //        };
-        //    }
-
-        //    return Ok(res.Value);
-        //}
-
-        /// <summary>
         /// Возвращает массив всех переходов
         /// </summary>
         /// <returns></returns>
@@ -108,6 +84,7 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Удаляет переход
         /// </summary>
+        /// <param name="id">ID перехода, 24 символа</param>
         /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize]

@@ -8,6 +8,7 @@ using MongoDB.Bson;
 using System.Net.Http;
 using System;
 using System.Security.Claims;
+using Constructor_API.Models.DTOs.Read;
 
 namespace Constructor_API.Controllers
 {
@@ -27,10 +28,29 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет проект в БД
         /// </summary>
-        /// <param name="projectDto">Тело проекта</param>
-        /// <returns></returns>
+        /// <param name="projectDto">JSON объект, представляющий проект</param>
+        /// <remarks>
+        /// POST /project
+        /// {
+        ///       "name": "string",
+        ///       "description": "string",
+        ///       "icon": "",
+        ///       "url": "string"
+        /// }
+        /// 
+        /// </remarks>  
+        /// <response code="200">Возвращает созданный по параметрам объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="401">Если пользователь не авторизован</response>
+        /// <response code="403">Если у пользователя нет доступа к объекту</response>
+        /// <response code="404">Если объекта, указанного в параметрах, нет в базе данных</response>
         [HttpPost]
         [Authorize]
+        [ProducesResponseType(typeof(GetProjectDto), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 401)]
+        [ProducesResponseType(typeof(string), 403)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> PostProject([FromBody] CreateProjectDto projectDto)
         {
             if (projectDto == null) return BadRequest("Wrong input");

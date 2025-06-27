@@ -6,6 +6,22 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.DTOs.Read
 {
+    public class GetSimpleProjectDto
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("status")]
+        public bool Status { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+    }
+
     public class GetProjectDto
     {
         [JsonPropertyName("id")]

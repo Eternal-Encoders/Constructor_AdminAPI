@@ -15,6 +15,10 @@ namespace Constructor_API.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Возвращает массив всех категорий
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllCategories()

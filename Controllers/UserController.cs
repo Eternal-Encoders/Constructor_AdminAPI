@@ -1,7 +1,9 @@
 ﻿using Constructor_API.Application.Services;
 using Constructor_API.Models.DTOs;
 using Constructor_API.Models.DTOs.Create;
+using Constructor_API.Models.DTOs.Read;
 using Constructor_API.Models.DTOs.Update;
+using Constructor_API.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -22,9 +24,23 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Регистрирует пользователя и возвращает JWT
         /// </summary>
-        /// <param name="createUserDto">Объект, состоящий из почты, имени пользователя и пароля</param>
-        /// <returns></returns>
+        /// <param name="createUserDto">JSON объект, состоящий из почты, имени пользователя и пароля</param>
+        /// <remarks>
+        /// Пример запроса:
+        /// 
+        /// POST /user/register
+        /// {
+        ///      "nickname": "string",
+        ///      "email": "string",
+        ///      "password": "stringst"
+        /// }
+        /// 
+        /// </remarks>   
+        /// <response code="200">Возвращает созданный по параметрам объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса или уникальные данные повторяются</response>
         [HttpPost("register")]
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(typeof(string), 400)]
         public async Task<IActionResult> RegisterUser([FromBody] CreateUserDto createUserDto)
         {
             if (createUserDto == null) return BadRequest("Wrong input");
@@ -35,9 +51,24 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Авторизирует пользователя и возвращает JWT
         /// </summary>
-        /// <param name="loginUserDto"></param>
-        /// <returns></returns>
+        /// <param name="loginUserDto">JSON объект, состоящий из почты и пароля</param>
+        /// <remarks>
+        /// Пример запроса:
+        /// 
+        /// POST /user/login
+        /// {
+        ///      "email": "string",
+        ///      "password": "stringst"
+        /// }
+        /// 
+        /// </remarks>   
+        /// <response code="200">Возвращает созданный по параметрам объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="404">Если объекта нет в базе данных</response>
         [HttpPost("login")]
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> LoginUser([FromBody] LoginUserDto loginUserDto)
         {
             if (loginUserDto == null) return BadRequest("Wrong input");
@@ -46,11 +77,26 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
-        /// Возвращает информацию о пользователе
+        /// Возвращает информацию о пользователе, необходим токен
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Пример запроса:
+        /// 
+        /// GET /user/info
+        /// 
+        /// </remarks>
+        /// <response code="200">Возвращает найденный объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="401">Если пользователь не авторизован</response>
+        /// <response code="403">Если у пользователя нет доступа к объекту</response>
+        /// <response code="404">Если объекта нет в базе данных</response>
         [HttpGet("info")]
         [Authorize]
+        [ProducesResponseType(typeof(GetUserDto), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 401)]
+        [ProducesResponseType(typeof(string), 403)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> GetUserInfo()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

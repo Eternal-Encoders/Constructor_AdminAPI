@@ -6,6 +6,24 @@ using System.Text.Json.Serialization;
 
 namespace Constructor_API.Models.DTOs.Read
 {
+    public class GetSimpleBuildingDto
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("status")]
+        public bool? Status { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+    }
+
     public class GetBuildingDto
     {
         [JsonPropertyName("id")]

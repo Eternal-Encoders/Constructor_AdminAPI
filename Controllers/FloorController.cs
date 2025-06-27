@@ -24,10 +24,30 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Добавляет этаж в БД
         /// </summary>
-        /// <param name="floorDto">JSON объект, представляющий информацию об этаже</param>
-        /// <returns></returns>
+        /// <param name="floorDto">JSON объект, представляющий этаж</param>
+        /// <remarks>
+        /// Пример запроса:
+        /// 
+        /// POST /floor
+        /// {
+        ///       "index": 0,
+        ///       "name": "string",
+        ///       "building_id": "111111111111111111111111"
+        /// }
+        /// 
+        /// </remarks>    
+        /// <response code="200">Возвращает созданный по параметрам объект</response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="401">Если пользователь не авторизован</response>
+        /// <response code="403">Если у пользователя нет доступа к объекту</response>
+        /// <response code="404">Если объекта, указанного в параметрах, нет в базе данных</response>
         [HttpPost]
         [Authorize]
+        [ProducesResponseType(typeof(Floor), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 401)]
+        [ProducesResponseType(typeof(string), 403)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> PostFloor([FromBody] CreateFloorDto? floorDto)
         {
             if (floorDto == null) return BadRequest("Wrong input");
@@ -44,11 +64,28 @@ namespace Constructor_API.Controllers
         }
 
         /// <summary>
+        /// Создание карты этажа на основе схемы
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("/schema")]
+        [Authorize]
+        public async Task<IActionResult> PostSchemaFloor(IFormFile file)
+        {
+            return Ok();
+        }
+
+        /// <summary>
         /// Возвращает массив всех этажей
         /// </summary>
         /// <returns></returns>
         [HttpGet("all")]
         [Authorize]
+        [ProducesResponseType(typeof(Floor[]), 200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 401)]
+        [ProducesResponseType(typeof(string), 403)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> GetAllFloors()
         {
             var floors = await _floorService.GetAllFloors(CancellationToken.None);
@@ -180,11 +217,104 @@ namespace Constructor_API.Controllers
         /// <summary>
         /// Обновляет тело этажа
         /// </summary>
-        /// <param name="id">D этажа, 24 символа</param>
-        /// <param name="floorDto">Тело этажа</param>
-        /// <returns></returns>
+        /// <param name="id">ID этажа, 24 символа</param>
+        /// <param name="floorDto">JSON объект, представляющий обновляемый этаж, может содержать пустые поля</param>
+        /// <remarks>
+        /// Пример запроса:
+        /// 
+        /// PATCH /floor/111111111111111111111111
+        /// {
+        ///     "index": 0,
+        ///     "name": "string",
+        ///     "building_id": "111111111111111111111111",
+        ///     "width": 0,
+        ///     "height": 0,
+        ///     "decorations": [
+        ///     {
+        ///         "points": [
+        ///         {
+        ///             "x": 0,
+        ///             "y": 0
+        ///         }
+        ///         ],
+        ///         "stroke": "string",
+        ///         "fill": "string"
+        ///     }
+        ///     ],
+        ///     "graph_points": [
+        ///     {
+        ///         "id": "111111111111111111111111",
+        ///         "x": 0,
+        ///         "y": 0,
+        ///         "links": [
+        ///         "string"
+        ///         ],
+        ///         "types": [
+        ///         "string"
+        ///         ],
+        ///         "name": "string",
+        ///         "synonyms": [
+        ///         "string"
+        ///         ],
+        ///         "time": [
+        ///         {
+        ///             "is_day_off": true,
+        ///             "from": "string",
+        ///             "to": "string"
+        ///         }
+        ///         ],
+        ///         "description": "string",
+        ///         "route_active": true,
+        ///         "search_active": true,
+        ///         "transition_id": "string"
+        ///     }
+        ///     ],
+        ///     "rooms": [
+        ///     {
+        ///         "id": "111111111111111111111111",
+        ///         "points": [
+        ///         {
+        ///             "x": 0,
+        ///             "y": 0
+        ///         }
+        ///         ],
+        ///         "fill": "string",
+        ///         "stroke": "string",
+        ///         "floor_id": "string",
+        ///         "children": [
+        ///         {
+        ///             "type": "string",
+        ///             "value": "string",
+        ///             "x": 0,
+        ///             "y": 0
+        ///         }
+        ///         ],
+        ///         "passages": [
+        ///         {
+        ///             "id": "111111111111111111111111",
+        ///             "x": 0,
+        ///             "y": 0,
+        ///             "width": 0,
+        ///             "height": 0,
+        ///             "fill": "string",
+        ///         }
+        ///         ]
+        ///     }]
+        /// }
+        /// 
+        /// </remarks>
+        /// <response code="200"></response>
+        /// <response code="400">Если неправильно указаны параметры запроса</response>
+        /// <response code="401">Если пользователь не авторизован</response>
+        /// <response code="403">Если у пользователя нет доступа к объекту</response>
+        /// <response code="404">Если указанного объекта или объекта, указанного в параметрах, нет в базе данных</response>
         [HttpPatch("{id}")]
         [Authorize]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(string), 400)]
+        [ProducesResponseType(typeof(string), 401)]
+        [ProducesResponseType(typeof(string), 403)]
+        [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> UpdateFloor(string id, [FromBody] UpdateFloorDto floorDto)
         {
             if (id == null) return BadRequest("Wrong input");

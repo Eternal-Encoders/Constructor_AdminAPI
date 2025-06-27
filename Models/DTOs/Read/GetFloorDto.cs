@@ -7,6 +7,19 @@ using Constructor_API.Models.Objects;
 
 namespace Constructor_API.Models.DTOs.Read
 {
+    public class GetSimpleFloorDto
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
+    }
+
     public class GetFloorDto
     {
         [JsonPropertyName("id")]
